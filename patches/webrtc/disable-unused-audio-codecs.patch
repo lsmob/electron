@@ -7,7 +7,7 @@ Disable audio codecs not required by Threema: L16 (raw PCM), PCMU, PCMA
 (G.711), and G.722. Only Opus is retained.
 
 diff --git a/api/audio_codecs/L16/audio_decoder_L16.cc b/api/audio_codecs/L16/audio_decoder_L16.cc
-index e6e1b243b10b3027006043236b157411adbae01a..129cadad10fccf8223fc7f4492d90c513680da71 100644
+index e6e1b243b1..129cadad10 100644
 --- a/api/audio_codecs/L16/audio_decoder_L16.cc
 +++ b/api/audio_codecs/L16/audio_decoder_L16.cc
 @@ -38,7 +38,7 @@ std::optional<AudioDecoderL16::Config> AudioDecoderL16::SdpToConfig(
@@ -30,7 +30,7 @@ index e6e1b243b10b3027006043236b157411adbae01a..129cadad10fccf8223fc7f4492d90c51
  
  }  // namespace webrtc
 diff --git a/api/audio_codecs/L16/audio_encoder_L16.cc b/api/audio_codecs/L16/audio_encoder_L16.cc
-index 71372bd450946f445df3aa1112a7b992432f56a1..cca4df572851c23e3238b4f3532723e00372aaad 100644
+index 71372bd450..cca4df5728 100644
 --- a/api/audio_codecs/L16/audio_encoder_L16.cc
 +++ b/api/audio_codecs/L16/audio_encoder_L16.cc
 @@ -54,7 +54,7 @@ std::optional<AudioEncoderL16::Config> AudioEncoderL16::SdpToConfig(
@@ -61,11 +61,11 @@ index 71372bd450946f445df3aa1112a7b992432f56a1..cca4df572851c23e3238b4f3532723e0
  
  }  // namespace webrtc
 diff --git a/api/audio_codecs/builtin_audio_decoder_factory.cc b/api/audio_codecs/builtin_audio_decoder_factory.cc
-index c4e71db5d2bd557c8c11627f2b174dcf363afe40..5b3a660b78d151f37db7bd640b4e59d43c3528de 100644
+index c8d5800587..2850a0a5e0 100644
 --- a/api/audio_codecs/builtin_audio_decoder_factory.cc
 +++ b/api/audio_codecs/builtin_audio_decoder_factory.cc
-@@ -15,19 +15,14 @@
- #include <utility>
+@@ -14,19 +14,14 @@
+ #include <optional>
  #include <vector>
  
 -#include "api/audio_codecs/L16/audio_decoder_L16.h"
@@ -86,7 +86,7 @@ index c4e71db5d2bd557c8c11627f2b174dcf363afe40..5b3a660b78d151f37db7bd640b4e59d4
  
  namespace webrtc {
  
-@@ -55,12 +50,7 @@ struct NotAdvertised {
+@@ -54,12 +49,7 @@ struct NotAdvertised {
  
  scoped_refptr<AudioDecoderFactory> CreateBuiltinAudioDecoderFactory() {
    return CreateAudioDecoderFactory<
@@ -101,11 +101,11 @@ index c4e71db5d2bd557c8c11627f2b174dcf363afe40..5b3a660b78d151f37db7bd640b4e59d4
  
  }  // namespace webrtc
 diff --git a/api/audio_codecs/builtin_audio_encoder_factory.cc b/api/audio_codecs/builtin_audio_encoder_factory.cc
-index 567c6c8eea64e8ddf228fd58be72fc6254335155..1d8720dbbc482fba0ea45ba88838882e67498842 100644
+index 4d63804da9..16532c1c2e 100644
 --- a/api/audio_codecs/builtin_audio_encoder_factory.cc
 +++ b/api/audio_codecs/builtin_audio_encoder_factory.cc
-@@ -15,20 +15,15 @@
- #include <utility>
+@@ -14,20 +14,15 @@
+ #include <optional>
  #include <vector>
  
 -#include "api/audio_codecs/L16/audio_encoder_L16.h"
@@ -127,7 +127,7 @@ index 567c6c8eea64e8ddf228fd58be72fc6254335155..1d8720dbbc482fba0ea45ba88838882e
  
  namespace webrtc {
  
-@@ -62,12 +57,7 @@ struct NotAdvertised {
+@@ -61,12 +56,7 @@ struct NotAdvertised {
  
  scoped_refptr<AudioEncoderFactory> CreateBuiltinAudioEncoderFactory() {
    return CreateAudioEncoderFactory<
@@ -142,21 +142,21 @@ index 567c6c8eea64e8ddf228fd58be72fc6254335155..1d8720dbbc482fba0ea45ba88838882e
  
  }  // namespace webrtc
 diff --git a/api/audio_codecs/g711/audio_decoder_g711.cc b/api/audio_codecs/g711/audio_decoder_g711.cc
-index 9e102f5731ded88daea2cd3aeb3b7da862accd86..4d9401b6bf875c7b8af39370f768a5686f59a6fc 100644
+index 400a27a17a..ab0ed9bd54 100644
 --- a/api/audio_codecs/g711/audio_decoder_g711.cc
 +++ b/api/audio_codecs/g711/audio_decoder_g711.cc
-@@ -45,9 +45,7 @@ std::optional<AudioDecoderG711::Config> AudioDecoderG711::SdpToConfig(
+@@ -47,9 +47,7 @@ std::optional<AudioDecoderG711::Config> AudioDecoderG711::SdpToConfig(
  
  void AudioDecoderG711::AppendSupportedDecoders(
      std::vector<AudioCodecSpec>* specs) {
 -  for (const char* type : {"PCMU", "PCMA"}) {
--    specs->push_back({.format = {type, 8000, 1}, .info = {8000, 1, 64000}});
+-    specs->push_back({{type, 8000, 1}, {8000, 1, 64000}});
 -  }
 +  // disabled
  }
  
  std::unique_ptr<AudioDecoder> AudioDecoderG711::MakeAudioDecoder(
-@@ -56,15 +54,7 @@ std::unique_ptr<AudioDecoder> AudioDecoderG711::MakeAudioDecoder(
+@@ -60,15 +58,7 @@ std::unique_ptr<AudioDecoder> AudioDecoderG711::MakeAudioDecoder(
      RTC_DCHECK_NOTREACHED();
      return nullptr;
    }
@@ -174,21 +174,21 @@ index 9e102f5731ded88daea2cd3aeb3b7da862accd86..4d9401b6bf875c7b8af39370f768a568
  
  }  // namespace webrtc
 diff --git a/api/audio_codecs/g711/audio_encoder_g711.cc b/api/audio_codecs/g711/audio_encoder_g711.cc
-index c7b3101480ed18fd68d9743cf697cd2776f9b39f..0d0b957d08cf9e94d33823016a41da66e7d0b6b3 100644
+index af8f1eaf80..b118e49d7b 100644
 --- a/api/audio_codecs/g711/audio_encoder_g711.cc
 +++ b/api/audio_codecs/g711/audio_encoder_g711.cc
-@@ -57,9 +57,7 @@ std::optional<AudioEncoderG711::Config> AudioEncoderG711::SdpToConfig(
+@@ -59,9 +59,7 @@ std::optional<AudioEncoderG711::Config> AudioEncoderG711::SdpToConfig(
  
  void AudioEncoderG711::AppendSupportedEncoders(
      std::vector<AudioCodecSpec>* specs) {
 -  for (const char* type : {"PCMU", "PCMA"}) {
--    specs->push_back({.format = {type, 8000, 1}, .info = {8000, 1, 64000}});
+-    specs->push_back({{type, 8000, 1}, {8000, 1, 64000}});
 -  }
 +  // disabled
  }
  
  AudioCodecInfo AudioEncoderG711::QueryAudioEncoder(const Config& config) {
-@@ -75,26 +73,7 @@ std::unique_ptr<AudioEncoder> AudioEncoderG711::MakeAudioEncoder(
+@@ -79,26 +77,7 @@ std::unique_ptr<AudioEncoder> AudioEncoderG711::MakeAudioEncoder(
      RTC_DCHECK_NOTREACHED();
      return nullptr;
    }
@@ -217,14 +217,14 @@ index c7b3101480ed18fd68d9743cf697cd2776f9b39f..0d0b957d08cf9e94d33823016a41da66
  
  }  // namespace webrtc
 diff --git a/api/audio_codecs/g722/audio_decoder_g722.cc b/api/audio_codecs/g722/audio_decoder_g722.cc
-index 46a3ab7236d2b84949edc766026d1ae791cca02c..003e5a6a32d742ab5f0bfd03337cad2a4fc912ca 100644
+index f948a21da0..003e5a6a32 100644
 --- a/api/audio_codecs/g722/audio_decoder_g722.cc
 +++ b/api/audio_codecs/g722/audio_decoder_g722.cc
 @@ -37,7 +37,7 @@ std::optional<AudioDecoderG722::Config> AudioDecoderG722::SdpToConfig(
  
  void AudioDecoderG722::AppendSupportedDecoders(
      std::vector<AudioCodecSpec>* specs) {
--  specs->push_back({.format = {"G722", 8000, 1}, .info = {16000, 1, 64000}});
+-  specs->push_back({{"G722", 8000, 1}, {16000, 1, 64000}});
 +  // disabled
  }
  
@@ -247,7 +247,7 @@ index 46a3ab7236d2b84949edc766026d1ae791cca02c..003e5a6a32d742ab5f0bfd03337cad2a
  
  }  // namespace webrtc
 diff --git a/api/audio_codecs/g722/audio_encoder_g722.cc b/api/audio_codecs/g722/audio_encoder_g722.cc
-index 70293a3e8186918d035603168c53c3b829a1f0d1..a83c8865db19b244ef958b51cc4dd82f60cb41c3 100644
+index d1bbb2e21b..a83c8865db 100644
 --- a/api/audio_codecs/g722/audio_encoder_g722.cc
 +++ b/api/audio_codecs/g722/audio_encoder_g722.cc
 @@ -56,9 +56,7 @@ std::optional<AudioEncoderG722Config> AudioEncoderG722::SdpToConfig(
@@ -256,7 +256,7 @@ index 70293a3e8186918d035603168c53c3b829a1f0d1..a83c8865db19b244ef958b51cc4dd82f
      std::vector<AudioCodecSpec>* specs) {
 -  const SdpAudioFormat fmt = {"G722", 8000, 1};
 -  const AudioCodecInfo info = QueryAudioEncoder(*SdpToConfig(fmt));
--  specs->push_back({.format = fmt, .info = info});
+-  specs->push_back({fmt, info});
 +  // disabled
  }
  

@@ -7,10 +7,10 @@ Remove DTMF tone-dialing and comfort noise (CN) codec support from voice
 engine and platform SDK wrappers. Threema does not use these codecs.
 
 diff --git a/media/engine/webrtc_voice_engine.cc b/media/engine/webrtc_voice_engine.cc
-index 6442497a0bc0cc47c50d97a2e13e1fa347646bbc..541516fbcb27fa080ee5a2bf253b907209312ecd 100644
+index 1998317924..667b9c8ddb 100644
 --- a/media/engine/webrtc_voice_engine.cc
 +++ b/media/engine/webrtc_voice_engine.cc
-@@ -365,12 +365,6 @@ std::vector<Codec> LegacyCollectCodecs(const std::vector<AudioCodecSpec>& specs,
+@@ -370,12 +370,6 @@ std::vector<Codec> LegacyCollectCodecs(const std::vector<AudioCodecSpec>& specs,
    PayloadTypePicker pt_mapper;
    std::vector<Codec> out;
  
@@ -23,7 +23,7 @@ index 6442497a0bc0cc47c50d97a2e13e1fa347646bbc..541516fbcb27fa080ee5a2bf253b9072
    for (const auto& spec : specs) {
      Codec codec = CreateAudioCodec(spec.format);
      if (allocate_pt) {
-@@ -386,21 +380,6 @@ std::vector<Codec> LegacyCollectCodecs(const std::vector<AudioCodecSpec>& specs,
+@@ -391,21 +385,6 @@ std::vector<Codec> LegacyCollectCodecs(const std::vector<AudioCodecSpec>& specs,
            FeedbackParam(kRtcpFbParamTransportCc, kParamValueEmpty));
      }
  
@@ -45,7 +45,7 @@ index 6442497a0bc0cc47c50d97a2e13e1fa347646bbc..541516fbcb27fa080ee5a2bf253b9072
      out.push_back(codec);
  
      // TODO(hta):  Don't assign RED codecs until we know that the PT for Opus
-@@ -422,27 +401,6 @@ std::vector<Codec> LegacyCollectCodecs(const std::vector<AudioCodecSpec>& specs,
+@@ -427,27 +406,6 @@ std::vector<Codec> LegacyCollectCodecs(const std::vector<AudioCodecSpec>& specs,
      }
    }
  
@@ -73,7 +73,7 @@ index 6442497a0bc0cc47c50d97a2e13e1fa347646bbc..541516fbcb27fa080ee5a2bf253b9072
    return out;
  }
  
-@@ -1448,21 +1406,6 @@ bool WebRtcVoiceSendChannel::SetSendCodecs(
+@@ -1453,20 +1411,6 @@ bool WebRtcVoiceSendChannel::SetSendCodecs(
      }
    }
  
@@ -84,8 +84,7 @@ index 6442497a0bc0cc47c50d97a2e13e1fa347646bbc..541516fbcb27fa080ee5a2bf253b9072
 -  for (const Codec& codec : codecs) {
 -    if (IsCodec(codec, kDtmfCodecName)) {
 -      dtmf_codecs.push_back(codec);
--      if ((dtmf_payload_type_ == PayloadType::NotSet()) ||
--          codec.clockrate < dtmf_payload_freq_) {
+-      if (!dtmf_payload_type_ || codec.clockrate < dtmf_payload_freq_) {
 -        dtmf_payload_type_ = codec.id;
 -        dtmf_payload_freq_ = codec.clockrate;
 -      }
@@ -95,7 +94,7 @@ index 6442497a0bc0cc47c50d97a2e13e1fa347646bbc..541516fbcb27fa080ee5a2bf253b9072
    // Scan through the list to figure out the codec to use for sending.
    std::optional<AudioSendStream::Config::SendCodecSpec> send_codec_spec;
    BitrateConstraints bitrate_config;
-@@ -1502,35 +1445,6 @@ bool WebRtcVoiceSendChannel::SetSendCodecs(
+@@ -1506,35 +1450,6 @@ bool WebRtcVoiceSendChannel::SetSendCodecs(
    }
  
    RTC_DCHECK(voice_codec_info);
@@ -113,7 +112,7 @@ index 6442497a0bc0cc47c50d97a2e13e1fa347646bbc..541516fbcb27fa080ee5a2bf253b9072
 -          RTC_LOG(LS_WARNING)
 -              << "CN frequency " << cn_codec.clockrate << " not supported.";
 -        } else {
--          send_codec_spec->cng_payload_type = cn_codec.id.value();
+-          send_codec_spec->cng_payload_type = cn_codec.id;
 -        }
 -        break;
 -      }
@@ -132,7 +131,7 @@ index 6442497a0bc0cc47c50d97a2e13e1fa347646bbc..541516fbcb27fa080ee5a2bf253b9072
    // Loop through the codecs to find the RED codec that matches opus
    // with respect to clockrate and number of channels.
 diff --git a/sdk/android/api/org/webrtc/RtpSender.java b/sdk/android/api/org/webrtc/RtpSender.java
-index de0781e2e746b895ce46a694eca5deff43d57ddd..adeefbe20ca9c4cca50828a0ae51bdb3697100e8 100644
+index de0781e2e7..adeefbe20c 100644
 --- a/sdk/android/api/org/webrtc/RtpSender.java
 +++ b/sdk/android/api/org/webrtc/RtpSender.java
 @@ -28,12 +28,7 @@ public class RtpSender {
@@ -150,10 +149,10 @@ index de0781e2e746b895ce46a694eca5deff43d57ddd..adeefbe20ca9c4cca50828a0ae51bdb3
  
    /**
 diff --git a/sdk/objc/api/peerconnection/RTCRtpSender.mm b/sdk/objc/api/peerconnection/RTCRtpSender.mm
-index f3135c6e5ca6d320c3882882ba0866cd0c2ba146..9c4ba7f4d0c793b264c0a68c37b53359d3ae88c0 100644
+index f3135c6e5c..9c4ba7f4d0 100644
 --- a/sdk/objc/api/peerconnection/RTCRtpSender.mm
 +++ b/sdk/objc/api/peerconnection/RTCRtpSender.mm
-@@ -128,14 +128,6 @@ - (void)setFrameEncryptor:
+@@ -128,14 +128,6 @@
    if (self) {
      _factory = factory;
      _nativeRtpSender = nativeRtpSender;

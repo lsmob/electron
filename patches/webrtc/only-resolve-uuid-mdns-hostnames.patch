@@ -8,7 +8,7 @@ resolving them. Any non-UUID mDNS hostname is dropped, preventing
 information leakage via unexpected mDNS resolution.
 
 diff --git a/p2p/base/p2p_transport_channel.cc b/p2p/base/p2p_transport_channel.cc
-index 4edd58d8e8f9ef06af0b0dc5e67a843789737ac3..3a97479e04a79ce45be7456b7ff614002ef7735c 100644
+index c1a006308d..c2d0672ecc 100644
 --- a/p2p/base/p2p_transport_channel.cc
 +++ b/p2p/base/p2p_transport_channel.cc
 @@ -18,6 +18,7 @@
@@ -17,9 +17,9 @@ index 4edd58d8e8f9ef06af0b0dc5e67a843789737ac3..3a97479e04a79ce45be7456b7ff61400
  #include <optional>
 +#include <regex>
  #include <set>
- #include <span>
  #include <string>
-@@ -1194,13 +1195,23 @@ void P2PTransportChannel::ResolveHostnameCandidate(const Candidate& candidate) {
+ #include <tuple>
+@@ -1192,13 +1193,23 @@ void P2PTransportChannel::ResolveHostnameCandidate(const Candidate& candidate) {
      return;
    }
  
@@ -45,18 +45,18 @@ index 4edd58d8e8f9ef06af0b0dc5e67a843789737ac3..3a97479e04a79ce45be7456b7ff61400
  
  void P2PTransportChannel::AddRemoteCandidate(const Candidate& candidate) {
 diff --git a/p2p/base/p2p_transport_channel.h b/p2p/base/p2p_transport_channel.h
-index 92f8dfe2bd298fe23c619058cf3f7f76fab5b9c0..5cb56fb428f3eac5cbf4893d04a00e4e3eb4ad7d 100644
+index e44b6eece4..5842a44275 100644
 --- a/p2p/base/p2p_transport_channel.h
 +++ b/p2p/base/p2p_transport_channel.h
-@@ -27,6 +27,7 @@
+@@ -26,6 +26,7 @@
+ #include <map>
  #include <memory>
  #include <optional>
- #include <span>
 +#include <regex>
  #include <string>
  #include <vector>
  
-@@ -494,6 +495,16 @@ class RTC_EXPORT P2PTransportChannel : public IceTransportInternal,
+@@ -501,6 +502,16 @@ class RTC_EXPORT P2PTransportChannel : public IceTransportInternal,
    std::vector<CandidateAndPermission> permission_queries_
        RTC_GUARDED_BY(&network_thread_);
  

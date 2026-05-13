@@ -9,7 +9,7 @@ wrappers for CryptoOptions so callers can enable SRTP_AES128_CM_SHA1_80
 cipher negotiation.
 
 diff --git a/sdk/android/api/org/webrtc/CryptoOptions.java b/sdk/android/api/org/webrtc/CryptoOptions.java
-index cb302df649afc105fc4da58664bb9d6b900138d5..4bc7f0ae15e8c67d0bdc66d8071f6eb75a2c130d 100644
+index 23f1e70f5a..d92073d387 100644
 --- a/sdk/android/api/org/webrtc/CryptoOptions.java
 +++ b/sdk/android/api/org/webrtc/CryptoOptions.java
 @@ -35,6 +35,11 @@ public final class CryptoOptions {
@@ -36,20 +36,18 @@ index cb302df649afc105fc4da58664bb9d6b900138d5..4bc7f0ae15e8c67d0bdc66d8071f6eb7
        this.enableEncryptedRtpHeaderExtensions = enableEncryptedRtpHeaderExtensions;
      }
  
-@@ -58,7 +64,12 @@ public final class CryptoOptions {
+@@ -58,6 +64,11 @@ public final class CryptoOptions {
        return enableAes128Sha1_32CryptoCipher;
      }
  
--    @CalledByNative
 +    @CalledByNative("Srtp")
 +    public boolean getEnableAes128Sha1_80CryptoCipher() {
 +      return enableAes128Sha1_80CryptoCipher;
 +    }
 +
-+    @CalledByNative("Srtp")
+     @CalledByNative("Srtp")
      public boolean getEnableEncryptedRtpHeaderExtensions() {
        return enableEncryptedRtpHeaderExtensions;
-     }
 @@ -90,9 +101,10 @@ public final class CryptoOptions {
    private final SFrame sframe;
  
@@ -95,7 +93,7 @@ index cb302df649afc105fc4da58664bb9d6b900138d5..4bc7f0ae15e8c67d0bdc66d8071f6eb7
    }
  }
 diff --git a/sdk/android/src/jni/pc/crypto_options.cc b/sdk/android/src/jni/pc/crypto_options.cc
-index 5ce4c85f3d50ab1f98224ba7ec175f2d0f6063a2..c44b715d107b71cda5232d386687c1c4df58647a 100644
+index 5ce4c85f3d..c44b715d10 100644
 --- a/sdk/android/src/jni/pc/crypto_options.cc
 +++ b/sdk/android/src/jni/pc/crypto_options.cc
 @@ -37,6 +37,8 @@ CryptoOptions JavaToNativeCryptoOptions(
@@ -108,10 +106,10 @@ index 5ce4c85f3d50ab1f98224ba7ec175f2d0f6063a2..c44b715d107b71cda5232d386687c1c4
        Java_Srtp_getEnableEncryptedRtpHeaderExtensions(jni, j_srtp);
    native_crypto_options.sframe.require_frame_encryption =
 diff --git a/sdk/objc/api/peerconnection/RTCConfiguration.mm b/sdk/objc/api/peerconnection/RTCConfiguration.mm
-index afad9369f12b5d13aad57c0368f749aa00956fcb..9b1cd729ab778e7c488595c8b08833541d27ff82 100644
+index a882245200..81282c3ea0 100644
 --- a/sdk/objc/api/peerconnection/RTCConfiguration.mm
 +++ b/sdk/objc/api/peerconnection/RTCConfiguration.mm
-@@ -138,6 +138,8 @@ - (instancetype)initWithNativeConfiguration:
+@@ -136,6 +136,8 @@
                                                     .enable_gcm_crypto_suites
             srtpEnableAes128Sha1_32CryptoCipher:
                 config.crypto_options.srtp.enable_aes128_sha1_32_crypto_cipher
@@ -121,7 +119,7 @@ index afad9369f12b5d13aad57c0368f749aa00956fcb..9b1cd729ab778e7c488595c8b0883354
              config.crypto_options.srtp.enable_encrypted_rtp_header_extensions
                    sframeRequireFrameEncryption:config.crypto_options.sframe
 diff --git a/sdk/objc/api/peerconnection/RTCCryptoOptions.h b/sdk/objc/api/peerconnection/RTCCryptoOptions.h
-index cb4ddd9c5d1d62233c2c6607f6b0b572564a4f51..9d5a21bf2cbefe4ceb00f5d33839a52957dd707f 100644
+index cb4ddd9c5d..9d5a21bf2c 100644
 --- a/sdk/objc/api/peerconnection/RTCCryptoOptions.h
 +++ b/sdk/objc/api/peerconnection/RTCCryptoOptions.h
 @@ -33,6 +33,11 @@ RTC_OBJC_EXPORT
@@ -146,10 +144,10 @@ index cb4ddd9c5d1d62233c2c6607f6b0b572564a4f51..9d5a21bf2cbefe4ceb00f5d33839a529
          (BOOL)srtpEnableEncryptedRtpHeaderExtensions
                sframeRequireFrameEncryption:(BOOL)sframeRequireFrameEncryption
 diff --git a/sdk/objc/api/peerconnection/RTCCryptoOptions.mm b/sdk/objc/api/peerconnection/RTCCryptoOptions.mm
-index 0b777b59e9a2f9a2eab28941eb2668ddaafe1e22..52acb63f1271b01daba39ff953c31efe0456e1d0 100644
+index 0b777b59e9..52acb63f12 100644
 --- a/sdk/objc/api/peerconnection/RTCCryptoOptions.mm
 +++ b/sdk/objc/api/peerconnection/RTCCryptoOptions.mm
-@@ -15,6 +15,8 @@ @implementation RTC_OBJC_TYPE (RTCCryptoOptions)
+@@ -15,6 +15,8 @@
  @synthesize srtpEnableGcmCryptoSuites = _srtpEnableGcmCryptoSuites;
  @synthesize srtpEnableAes128Sha1_32CryptoCipher =
      _srtpEnableAes128Sha1_32CryptoCipher;
@@ -158,7 +156,7 @@ index 0b777b59e9a2f9a2eab28941eb2668ddaafe1e22..52acb63f1271b01daba39ff953c31efe
  @synthesize srtpEnableEncryptedRtpHeaderExtensions =
      _srtpEnableEncryptedRtpHeaderExtensions;
  @synthesize sframeRequireFrameEncryption = _sframeRequireFrameEncryption;
-@@ -23,6 +25,8 @@ @implementation RTC_OBJC_TYPE (RTCCryptoOptions)
+@@ -23,6 +25,8 @@
           initWithSrtpEnableGcmCryptoSuites:(BOOL)srtpEnableGcmCryptoSuites
         srtpEnableAes128Sha1_32CryptoCipher:
             (BOOL)srtpEnableAes128Sha1_32CryptoCipher
@@ -167,7 +165,7 @@ index 0b777b59e9a2f9a2eab28941eb2668ddaafe1e22..52acb63f1271b01daba39ff953c31efe
      srtpEnableEncryptedRtpHeaderExtensions:
          (BOOL)srtpEnableEncryptedRtpHeaderExtensions
                sframeRequireFrameEncryption:(BOOL)sframeRequireFrameEncryption {
-@@ -30,6 +34,7 @@ @implementation RTC_OBJC_TYPE (RTCCryptoOptions)
+@@ -30,6 +34,7 @@
    if (self) {
      _srtpEnableGcmCryptoSuites = srtpEnableGcmCryptoSuites;
      _srtpEnableAes128Sha1_32CryptoCipher = srtpEnableAes128Sha1_32CryptoCipher;
