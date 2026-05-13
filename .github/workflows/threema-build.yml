@@ -20,11 +20,7 @@ name: Threema Custom Electron Build
 #                       Electron's RBE. Replace ENGFLOW_CLUSTER and ENGFLOW_INSTANCE
 #                       placeholders in the "Init build configuration" step once you
 #                       have an EngFlow account.
-#   ELECTRON_RBE_JWT    (optional) - JWT for Electron's own RBE/siso cache.
-#                       Used as fallback when ENGFLOW_CREDENTIAL_JSON is absent.
-#                       When set, `e d rbe login` authenticates silently. When both
-#                       are absent, the login step prints a device-auth URL to the
-#                       live log — visit it to authenticate.
+#                       When absent, the build runs locally with no remote cache.
 #   CHROMIUM_GIT_COOKIE         (optional) - Raises Chromium git server rate
 #   CHROMIUM_GIT_COOKIE_WINDOWS_STRING  limits. Builds work without it but
 #                               may hit throttling during gclient sync.
@@ -98,7 +94,7 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_arm=True --custom-var=checkout_arm64=True'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
-      ELECTRON_RBE_JWT: ${{ secrets.ELECTRON_RBE_JWT }}
+
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
     steps:
@@ -153,9 +149,6 @@ jobs:
             echo "RBE_instance=PLACEHOLDER_ENGFLOW_INSTANCE"
             echo "RBE_credential_file=$ENGFLOW_CREDS"
           } >> "$GITHUB_ENV"
-        else
-          echo "No EngFlow credentials — falling back to Electron RBE"
-          e d rbe login
         fi
 
         e init -f --root=$(pwd) --out=Default \
@@ -213,7 +206,7 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_arm=True --custom-var=checkout_arm64=True'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
-      ELECTRON_RBE_JWT: ${{ secrets.ELECTRON_RBE_JWT }}
+
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
     steps:
@@ -268,9 +261,6 @@ jobs:
             echo "RBE_instance=PLACEHOLDER_ENGFLOW_INSTANCE"
             echo "RBE_credential_file=$ENGFLOW_CREDS"
           } >> "$GITHUB_ENV"
-        else
-          echo "No EngFlow credentials — falling back to Electron RBE"
-          e d rbe login
         fi
 
         e init -f --root=$(pwd) --out=Default \
@@ -325,7 +315,7 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_mac=True --custom-var=host_os=mac'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
-      ELECTRON_RBE_JWT: ${{ secrets.ELECTRON_RBE_JWT }}
+
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
     steps:
@@ -412,9 +402,6 @@ jobs:
             echo "RBE_instance=PLACEHOLDER_ENGFLOW_INSTANCE"
             echo "RBE_credential_file=$ENGFLOW_CREDS"
           } >> "$GITHUB_ENV"
-        else
-          echo "No EngFlow credentials — falling back to Electron RBE"
-          e d rbe login
         fi
 
         e init -f --root=$(pwd) --out=Default \
@@ -474,7 +461,7 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_mac=True --custom-var=host_os=mac'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
-      ELECTRON_RBE_JWT: ${{ secrets.ELECTRON_RBE_JWT }}
+
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
     steps:
@@ -561,9 +548,6 @@ jobs:
             echo "RBE_instance=PLACEHOLDER_ENGFLOW_INSTANCE"
             echo "RBE_credential_file=$ENGFLOW_CREDS"
           } >> "$GITHUB_ENV"
-        else
-          echo "No EngFlow credentials — falling back to Electron RBE"
-          e d rbe login
         fi
 
         e init -f --root=$(pwd) --out=Default \
@@ -623,7 +607,7 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_win=True'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
-      ELECTRON_RBE_JWT: ${{ secrets.ELECTRON_RBE_JWT }}
+
       CHROMIUM_GIT_COOKIE_WINDOWS_STRING: ${{ secrets.CHROMIUM_GIT_COOKIE_WINDOWS_STRING }}
       # Let depot_tools download the pinned MSVC toolchain
       ELECTRON_DEPOT_TOOLS_WIN_TOOLCHAIN: '1'
@@ -693,9 +677,6 @@ jobs:
             echo "RBE_instance=PLACEHOLDER_ENGFLOW_INSTANCE"
             echo "RBE_credential_file=$ENGFLOW_CREDS"
           } >> "$GITHUB_ENV"
-        else
-          echo "No EngFlow credentials — falling back to Electron RBE"
-          e d rbe login
         fi
 
         e init -f --root=$(pwd) --out=Default \
