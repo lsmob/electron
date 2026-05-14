@@ -178,6 +178,14 @@ jobs:
         cd src
         e build --target electron:electron_chromedriver_zip
 
+    - name: Build node headers
+      run: |
+        cd src
+        e build --target electron:node_headers
+        VERSION=$(node -p "require('./electron/package.json').version")
+        tar -czf "out/Default/node-v${VERSION}-headers.tar.gz" \
+          -C out/Default/gen/node_headers .
+
     - name: Upload dist artifacts
       if: always() && !cancelled()
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
@@ -186,6 +194,7 @@ jobs:
         path: |
           src/out/Default/dist.zip
           src/out/Default/chromedriver.zip
+          src/out/Default/node-v*-headers.tar.gz
 
 # ──────────────────────────────────────────────────────────────────────────────
 # LINUX arm64  (cross-compiled on x64 runner)
@@ -799,6 +808,10 @@ jobs:
 
         rename artifacts/windows-x64/dist.zip        "electron-v${VERSION}-win32-x64.zip"
         rename artifacts/windows-x64/chromedriver.zip "chromedriver-v${VERSION}-win32-x64.zip"
+
+        # Node headers — built from source in the linux-x64 job (platform-independent).
+        rename artifacts/linux-x64/node-v${VERSION}-headers.tar.gz \
+          "node-v${VERSION}-headers.tar.gz"
 
         cd release-assets
         sha256sum * > SHASUMS256.txt
