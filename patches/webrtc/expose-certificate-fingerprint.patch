@@ -35,22 +35,25 @@ diff --git a/rtc_base/rtc_certificate.h b/rtc_base/rtc_certificate.h
 index 8eca23bc0d..be71bbcdd9 100644
 --- a/rtc_base/rtc_certificate.h
 +++ b/rtc_base/rtc_certificate.h
-@@ -34,15 +34,20 @@ namespace webrtc {
+@@ -34,15 +34,23 @@ namespace webrtc {
  class RTCCertificatePEM {
   public:
    RTCCertificatePEM(absl::string_view private_key,
 -                    absl::string_view certificate)
 -      : private_key_(private_key), certificate_(certificate) {}
++                    absl::string_view certificate)
++      : RTCCertificatePEM(private_key, certificate, "") {}
++  RTCCertificatePEM(absl::string_view private_key,
 +                    absl::string_view certificate,
 +                    absl::string_view fingerprint)
 +      : private_key_(private_key),
 +        certificate_(certificate),
 +        fingerprint_(fingerprint) {}
- 
+
    const std::string& private_key() const { return private_key_; }
    const std::string& certificate() const { return certificate_; }
 +  const std::string& fingerprint() const { return fingerprint_; }
- 
+
   private:
    std::string private_key_;
    std::string certificate_;
