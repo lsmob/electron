@@ -109,16 +109,6 @@ jobs:
         path: src/electron
         fetch-depth: 0
 
-    - name: Cache git objects
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-      with:
-        path: git-cache
-        key: v1-git-cache-linux-${{ hashFiles('src/electron/DEPS') }}
-        restore-keys: |
-          v1-git-cache-linux-
-
-    - name: Set GIT_CACHE_PATH
-      run: echo "GIT_CACHE_PATH=$GITHUB_WORKSPACE/git-cache" >> $GITHUB_ENV
 
     - name: Set Chromium Git Cookie
       uses: ./src/electron/.github/actions/set-chromium-cookie
@@ -224,16 +214,6 @@ jobs:
         path: src/electron
         fetch-depth: 0
 
-    - name: Cache git objects
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-      with:
-        path: git-cache
-        key: v1-git-cache-linux-arm64-${{ hashFiles('src/electron/DEPS') }}
-        restore-keys: |
-          v1-git-cache-linux-arm64-
-
-    - name: Set GIT_CACHE_PATH
-      run: echo "GIT_CACHE_PATH=$GITHUB_WORKSPACE/git-cache" >> $GITHUB_ENV
 
     - name: Set Chromium Git Cookie
       uses: ./src/electron/.github/actions/set-chromium-cookie
@@ -353,16 +333,6 @@ jobs:
         cache: yarn
         cache-dependency-path: src/electron/yarn.lock
 
-    - name: Cache git objects
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-      with:
-        path: git-cache
-        key: v1-git-cache-macos-arm64-${{ hashFiles('src/electron/DEPS') }}
-        restore-keys: |
-          v1-git-cache-macos-arm64-
-
-    - name: Set GIT_CACHE_PATH
-      run: echo "GIT_CACHE_PATH=$GITHUB_WORKSPACE/git-cache" >> $GITHUB_ENV
 
     - name: Set GN_EXTRA_ARGS for macOS arm64 cross-compilation
       run: |
@@ -500,16 +470,6 @@ jobs:
         cache: yarn
         cache-dependency-path: src/electron/yarn.lock
 
-    - name: Cache git objects
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-      with:
-        path: git-cache
-        key: v1-git-cache-macos-x64-${{ hashFiles('src/electron/DEPS') }}
-        restore-keys: |
-          v1-git-cache-macos-x64-
-
-    - name: Set GIT_CACHE_PATH
-      run: echo "GIT_CACHE_PATH=$GITHUB_WORKSPACE/git-cache" >> $GITHUB_ENV
 
     - name: Set GN_EXTRA_ARGS for macOS x64
       run: |
@@ -637,17 +597,6 @@ jobs:
         path: src/electron
         fetch-depth: 0
 
-    - name: Cache git objects
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-      with:
-        path: git-cache
-        key: v1-git-cache-windows-x64-${{ hashFiles('src/electron/DEPS') }}
-        restore-keys: |
-          v1-git-cache-windows-x64-
-        enableCrossOsArchive: false
-
-    - name: Set GIT_CACHE_PATH
-      run: echo "GIT_CACHE_PATH=$GITHUB_WORKSPACE/git-cache" >> $GITHUB_ENV
 
     - name: Set Chromium Git Cookie
       uses: ./src/electron/.github/actions/set-chromium-cookie
