@@ -1,6 +1,6 @@
-name: Threema Custom Electron Build
+name: Threema Electron Build
 
-# Builds a custom Electron with Threema's WebRTC patches for all platforms.
+# Builds Electron with Threema's WebRTC patches for all platforms.
 #
 # RUNNER REQUIREMENTS:
 #   This workflow requires GitHub Team/Enterprise large runners, or self-hosted
@@ -65,6 +65,11 @@ on:
         type: boolean
         description: 'Generate debug symbols (significantly increases build time and artifact size)'
         default: false
+        required: false
+      version:
+        type: string
+        description: 'Release version (e.g. 40.10.0). Overrides package.json. Used for the release tag v{version}-threema and artifact names.'
+        default: ''
         required: false
 
 defaults:
@@ -779,7 +784,12 @@ jobs:
 
     - name: Get Electron version
       id: version
-      run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      run: |
+        if [ -n "${{ inputs.version }}" ]; then
+          echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        fi
 
     - name: Download Linux x64 artifacts
       if: needs.linux-x64.result == 'success'
@@ -853,7 +863,7 @@ jobs:
         VERSION="${{ steps.version.outputs.version }}"
         TAG="v${VERSION}-threema"
         TITLE="Electron v${VERSION} (Threema)"
-        NOTES="Custom Electron build with Threema WebRTC patches.
+        NOTES="Electron build with Threema WebRTC patches.
 
         **Download with \`@electron/get\`:**
         \`\`\`
