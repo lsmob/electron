@@ -28,7 +28,7 @@ name: Threema Electron Build
 on:
   workflow_dispatch:
     inputs:
-      build-linux:
+      build-linux-x64:
         type: boolean
         description: 'Build Linux x64'
         default: false
@@ -88,7 +88,7 @@ env:
 jobs:
   linux-x64:
     name: 'Linux / x64'
-    if: ${{ github.repository == 'lsmob/electron' && inputs.build-linux }}
+    if: ${{ github.repository == 'lsmob/electron' && inputs.build-linux-x64 }}
     runs-on: [self-hosted, linux, x64]
     container:
       image: ghcr.io/electron/build:daad061f4b99a0ae1c841be4aa09188280a9c8a4
