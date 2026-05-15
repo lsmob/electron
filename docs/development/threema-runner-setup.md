@@ -150,26 +150,37 @@ tar xzf actions-runner-osx-x64.tar.gz
 ./svc.sh install
 ```
 
-```bash
-# Allow the agent to run without a GUI session
-/usr/libexec/PlistBuddy \
-  -c "Add :LimitLoadToSessionType string Background" \
-  ~/Library/LaunchAgents/actions.runner.lsmob-electron.macos-intel-builder.plist
+On macOS Ventura and later, `svc.sh start` is broken (`launchctl load` is
+deprecated). The generated plist also lacks a `LimitLoadToSessionType`, which
+causes bootstrap to fail without a GUI session. Fix both issues and raise the
+file descriptor limits so the build doesn't need `sudo` at runtime:
 
+```bash
+PLIST=~/Library/LaunchAgents/actions.runner.lsmob-electron.macos-intel-builder.plist
+
+# Allow the agent to run without a GUI session
+/usr/libexec/PlistBuddy -c "Add :LimitLoadToSessionType string Background" "$PLIST"
+
+# Raise file descriptor limits — avoids sudo during the build
+/usr/libexec/PlistBuddy -c "Add :SoftResourceLimits dict" "$PLIST"
+/usr/libexec/PlistBuddy -c "Add :SoftResourceLimits:NumberOfFiles integer 10000" "$PLIST"
+/usr/libexec/PlistBuddy -c "Add :HardResourceLimits dict" "$PLIST"
+/usr/libexec/PlistBuddy -c "Add :HardResourceLimits:NumberOfFiles integer 65536" "$PLIST"
+```
+
+```bash
 # Start — use user/ domain, not gui/ (gui/ requires an active GUI session)
-launchctl bootstrap user/$(id -u) \
-  ~/Library/LaunchAgents/actions.runner.lsmob-electron.macos-intel-builder.plist
+launchctl bootstrap user/$(id -u) "$PLIST"
 
 # Stop
-launchctl bootout user/$(id -u) \
-  ~/Library/LaunchAgents/actions.runner.lsmob-electron.macos-intel-builder.plist
+launchctl bootout user/$(id -u) "$PLIST"
 
 # Status
 launchctl print user/$(id -u)/actions.runner.lsmob-electron.macos-intel-builder
 ```
 
 > **Note:** `svc.sh install` regenerates the plist each time, so re-apply the
-> `PlistBuddy` command after any reinstall.
+> `PlistBuddy` commands after any reinstall.
 
 Check logs:
 ```bash
