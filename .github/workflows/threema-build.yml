@@ -182,8 +182,7 @@ jobs:
       run: |
         cd src
         e build --target electron:node_headers
-        VERSION=$(node -p "require('./electron/package.json').version")
-        cp out/Default/gen/node_headers.tar.gz "out/Default/node-v${VERSION}-headers.tar.gz"
+        cp out/Default/gen/node_headers.tar.gz out/Default/node_headers.tar.gz
 
     - name: Upload dist artifacts
       if: always() && !cancelled()
@@ -193,7 +192,7 @@ jobs:
         path: |
           src/out/Default/dist.zip
           src/out/Default/chromedriver.zip
-          src/out/Default/node-v*-headers.tar.gz
+          src/out/Default/node_headers.tar.gz
 
 # ──────────────────────────────────────────────────────────────────────────────
 # LINUX arm64  (cross-compiled on x64 runner)
@@ -809,7 +808,7 @@ jobs:
         rename artifacts/windows-x64/chromedriver.zip "chromedriver-v${VERSION}-win32-x64.zip"
 
         # Node headers — built from source in the linux-x64 job (platform-independent).
-        rename artifacts/linux-x64/node-v${VERSION}-headers.tar.gz \
+        rename artifacts/linux-x64/node_headers.tar.gz \
           "node-v${VERSION}-headers.tar.gz"
 
         cd release-assets
