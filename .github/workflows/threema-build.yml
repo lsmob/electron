@@ -183,7 +183,7 @@ jobs:
         cd src
         e build --target electron:node_headers
         VERSION=$(node -p "require('./electron/package.json').version")
-        cp out/Default/node_headers.tar.gz "out/Default/node-v${VERSION}-headers.tar.gz"
+        cp out/Default/gen/node_headers.tar.gz "out/Default/node-v${VERSION}-headers.tar.gz"
 
     - name: Upload dist artifacts
       if: always() && !cancelled()
