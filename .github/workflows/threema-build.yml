@@ -315,23 +315,11 @@ jobs:
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
     steps:
-    - name: Free up disk space (pre-checkout)
-      run: |
-        sudo rm -rf /Library/Developer/CoreSimulator || true
-        sudo rm -rf ~/Library/Developer/CoreSimulator || true
-        sudo rm -rf /Applications/Xcode_16.1.app /Applications/Xcode_16.2.app /Applications/Xcode_16.3.app || true
-        sudo rm -rf /Applications/Safari.app "/Applications/Google Chrome.app" /Applications/Firefox.app || true
-        sudo rm -rf /Users/runner/.dotnet /Users/runner/.rustup /Users/runner/Library/Android || true
-        df -h
-
     - name: Checkout Electron
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
         path: src/electron
         fetch-depth: 0
-
-    - name: Free up disk space (post-checkout, uses action)
-      uses: ./src/electron/.github/actions/free-space-macos
 
     - name: Setup Node.js
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
@@ -410,8 +398,6 @@ jobs:
 
     - name: Build Electron
       run: |
-        ulimit -n 10000
-        sudo launchctl limit maxfiles 65536 200000
         cd src/electron && git pack-refs && cd ../..
         cd src && e d gn clean out/Default 2>/dev/null || true && cd ..
         if [ "$GN_BUILD_TYPE" = "release" ]; then
@@ -452,23 +438,11 @@ jobs:
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
     steps:
-    - name: Free up disk space (pre-checkout shell)
-      run: |
-        sudo rm -rf /Library/Developer/CoreSimulator || true
-        sudo rm -rf ~/Library/Developer/CoreSimulator || true
-        sudo rm -rf /Applications/Xcode_16.1.app /Applications/Xcode_16.2.app /Applications/Xcode_16.3.app || true
-        sudo rm -rf /Applications/Safari.app "/Applications/Google Chrome.app" /Applications/Firefox.app || true
-        sudo rm -rf /Users/runner/.dotnet /Users/runner/.rustup /Users/runner/Library/Android || true
-        df -h
-
     - name: Checkout Electron
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
         path: src/electron
         fetch-depth: 0
-
-    - name: Free up disk space (post-checkout, uses action)
-      uses: ./src/electron/.github/actions/free-space-macos
 
     - name: Setup Node.js
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
@@ -547,8 +521,6 @@ jobs:
 
     - name: Build Electron
       run: |
-        ulimit -n 10000
-        sudo launchctl limit maxfiles 65536 200000
         cd src/electron && git pack-refs && cd ../..
         cd src && e d gn clean out/Default 2>/dev/null || true && cd ..
         if [ "$GN_BUILD_TYPE" = "release" ]; then
