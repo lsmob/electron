@@ -148,9 +148,28 @@ tar xzf actions-runner-osx-x64.tar.gz
 
 ```bash
 ./svc.sh install
-./svc.sh start
-./svc.sh status
 ```
+
+```bash
+# Allow the agent to run without a GUI session
+/usr/libexec/PlistBuddy \
+  -c "Add :LimitLoadToSessionType string Background" \
+  ~/Library/LaunchAgents/actions.runner.lsmob-electron.macos-intel-builder.plist
+
+# Start — use user/ domain, not gui/ (gui/ requires an active GUI session)
+launchctl bootstrap user/$(id -u) \
+  ~/Library/LaunchAgents/actions.runner.lsmob-electron.macos-intel-builder.plist
+
+# Stop
+launchctl bootout user/$(id -u) \
+  ~/Library/LaunchAgents/actions.runner.lsmob-electron.macos-intel-builder.plist
+
+# Status
+launchctl print user/$(id -u)/actions.runner.lsmob-electron.macos-intel-builder
+```
+
+> **Note:** `svc.sh install` regenerates the plist each time, so re-apply the
+> `PlistBuddy` command after any reinstall.
 
 Check logs:
 ```bash
@@ -164,8 +183,8 @@ tail -f ~/Library/Logs/actions.runner.lsmob-electron.macos-intel-builder/Runner_
 - **x64 build**: native compilation, also on this Intel host. It is disabled by
   default in the workflow since arm64 covers the primary target; enable it
   explicitly when needed.
-- The first sync downloads ~30 GB of Chromium source. Subsequent runs reuse the
-  GitHub Actions git-object cache.
+- The first sync downloads ~30 GB of Chromium source. Subsequent runs reuse
+  whatever Chromium source is already on disk from prior workflow runs.
 
 ---
 
