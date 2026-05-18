@@ -325,8 +325,6 @@ jobs:
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
       with:
         node-version: 22.21.x
-        cache: yarn
-        cache-dependency-path: src/electron/yarn.lock
 
 
     - name: Set GN_EXTRA_ARGS for macOS arm64 cross-compilation
@@ -448,8 +446,6 @@ jobs:
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
       with:
         node-version: 22.21.x
-        cache: yarn
-        cache-dependency-path: src/electron/yarn.lock
 
 
     - name: Set GN_EXTRA_ARGS for macOS x64
