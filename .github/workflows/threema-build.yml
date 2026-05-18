@@ -311,7 +311,7 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_mac=True --custom-var=host_os=mac'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
-
+      ELECTRON_DEPOT_TOOLS_DISABLE_LOG: "1"
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
     steps:
@@ -432,7 +432,7 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_mac=True --custom-var=host_os=mac'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
-
+      ELECTRON_DEPOT_TOOLS_DISABLE_LOG: "1"
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
     steps:
