@@ -311,6 +311,7 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_mac=True --custom-var=host_os=mac'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
+      ELECTRON_RBE_JWT: ${{ secrets.ELECTRON_RBE_JWT }}
       ELECTRON_DEPOT_TOOLS_DISABLE_LOG: "1"
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
@@ -391,8 +392,6 @@ jobs:
     - name: Install yarn dependencies
       uses: ./src/electron/.github/actions/install-dependencies
 
-    - name: Check disk space before build
-      run: df -h
 
     - name: Build Electron
       run: |
@@ -432,6 +431,7 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_mac=True --custom-var=host_os=mac'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
+      ELECTRON_RBE_JWT: ${{ secrets.ELECTRON_RBE_JWT }}
       ELECTRON_DEPOT_TOOLS_DISABLE_LOG: "1"
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
@@ -512,8 +512,6 @@ jobs:
     - name: Install yarn dependencies
       uses: ./src/electron/.github/actions/install-dependencies
 
-    - name: Check disk space before build
-      run: df -h
 
     - name: Build Electron
       run: |
@@ -553,6 +551,7 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_win=True'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
+      ELECTRON_RBE_JWT: ${{ secrets.ELECTRON_RBE_JWT }}
 
       CHROMIUM_GIT_COOKIE_WINDOWS_STRING: ${{ secrets.CHROMIUM_GIT_COOKIE_WINDOWS_STRING }}
       # Let depot_tools download the pinned MSVC toolchain
