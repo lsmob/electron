@@ -492,38 +492,27 @@ jobs:
 
     - name: Debug RBE auth
       run: |
-        echo "=== ELECTRON_RBE_JWT diagnostic ==="
-        if [ -z "${ELECTRON_RBE_JWT:-}" ]; then
-          echo "ELECTRON_RBE_JWT is NOT set (empty or missing)"
-        else
-          echo "ELECTRON_RBE_JWT is set, length=${#ELECTRON_RBE_JWT}"
-          # Decode JWT payload (middle segment) to check exp and sub without revealing the token
-          JWT_PAYLOAD=$(echo "$ELECTRON_RBE_JWT" | cut -d. -f2)
-          # Add padding if needed
-          PADDED="${JWT_PAYLOAD}$(python3 -c "print('=' * ((4 - len('${JWT_PAYLOAD}') % 4) % 4))")"
-          echo "JWT payload: $(echo "$PADDED" | base64 -d 2>/dev/null || echo "(decode failed)")"
+        echo "=== Find credential helper binary ==="
+        HELPER=$(find ~ -name "electron-rbe-credential-helper" 2>/dev/null | head -1 || true)
+        echo "Helper path: ${HELPER:-(not found)}"
+        echo ""
+        echo "=== Strings search for credential file path ==="
+        if [ -n "$HELPER" ]; then
+          strings "$HELPER" | grep -iE "(home|config|library|cache|cred|token|notgoma|electron.rbe)" | sort -u
         fi
         echo ""
-        echo "=== Network reachability ==="
-        curl -v --max-time 5 https://auth.notgoma.com 2>&1 | head -20 || echo "(curl exited with $?)"
-        echo ""
-        echo "=== credential helper version ==="
-        e d rbe version 2>&1 || e d rbe --version 2>&1 || echo "(no version subcommand)"
-        echo ""
-        echo "=== e d rbe login ==="
-        e d rbe login 2>&1 || echo "(rbe login exited with $?)"
-        echo ""
-        echo "=== e d rbe status ==="
-        e d rbe status 2>&1 || echo "(rbe status exited with $?)"
-        echo ""
-        echo "=== e d rbe print ==="
-        e d rbe print 2>&1 || echo "(rbe print exited with $?)"
-        echo ""
-        echo "=== e d rbe get ==="
-        e d rbe get 2>&1 || echo "(rbe get exited with $?)"
-        echo ""
-        echo "=== e d rbe flags ==="
-        e d rbe flags 2>&1 || echo "(rbe flags exited with $?)"
+        echo "=== Provision credential file and retest ==="
+        # Attempt to write JWT to likely locations and see which makes rbe status pass
+        for CRED_DIR in \
+          "$HOME/.config/electron-rbe-credential-helper" \
+          "$HOME/Library/Application Support/electron-rbe-credential-helper" \
+          "$HOME/.electron-rbe"; do
+          mkdir -p "$CRED_DIR"
+          echo "$ELECTRON_RBE_JWT" > "$CRED_DIR/creds"
+          echo "--- tried $CRED_DIR/creds ---"
+          e d rbe status 2>&1 && echo "STATUS PASSED with $CRED_DIR/creds" && break
+          rm -f "$CRED_DIR/creds"
+        done || true
 
     - name: Init build configuration
       run: |
