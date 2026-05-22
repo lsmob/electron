@@ -500,11 +500,19 @@ jobs:
           echo "First 20 chars: ${ELECTRON_RBE_JWT:0:20}..."
         fi
         echo ""
-        echo "=== e d rbe login ==="
+        # rbe login = interactive OAuth, expected to fail in CI
+        echo "=== e d rbe login (expected to fail in CI) ==="
         e d rbe login || echo "(rbe login exited with $?)"
         echo ""
-        echo "=== e d rbe get ==="
-        e d rbe get || echo "(rbe get exited with $?)"
+        # rbe status and flags may work via ELECTRON_RBE_JWT without a credential file
+        echo "=== e d rbe status ==="
+        e d rbe status || echo "(rbe status exited with $?)"
+        echo ""
+        echo "=== e d rbe flags ==="
+        e d rbe flags || echo "(rbe flags exited with $?)"
+        echo ""
+        echo "=== e d rbe print ==="
+        e d rbe print || echo "(rbe print exited with $?)"
 
     - name: Init build configuration
       run: |
