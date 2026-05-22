@@ -515,6 +515,15 @@ jobs:
         echo ""
         echo "=== e d rbe status ==="
         e d rbe status 2>&1 || echo "(rbe status exited with $?)"
+        echo ""
+        echo "=== e d rbe print ==="
+        e d rbe print 2>&1 || echo "(rbe print exited with $?)"
+        echo ""
+        echo "=== e d rbe get ==="
+        e d rbe get 2>&1 || echo "(rbe get exited with $?)"
+        echo ""
+        echo "=== e d rbe flags ==="
+        e d rbe flags 2>&1 || echo "(rbe flags exited with $?)"
 
     - name: Init build configuration
       run: |
