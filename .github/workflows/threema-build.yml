@@ -377,10 +377,21 @@ jobs:
           } >> "$GITHUB_ENV"
         fi
 
-        e init -f --root=$(pwd) --out=Default \
-          "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
-          --target-cpu "$TARGET_ARCH" \
-          --remote-build siso
+        # Use siso remote build only when RBE credentials are available.
+        # macOS native runners don't have Electron's RBE pre-configured (unlike
+        # the Linux Docker image), so fall back to a local build when neither
+        # EngFlow nor ELECTRON_RBE_JWT is provided.
+        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ] || [ -n "${ELECTRON_RBE_JWT:-}" ]; then
+          e init -f --root=$(pwd) --out=Default \
+            "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
+            --target-cpu "$TARGET_ARCH" \
+            --remote-build siso
+        else
+          echo "No RBE credentials available — building locally without remote cache"
+          e init -f --root=$(pwd) --out=Default \
+            "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
+            --target-cpu "$TARGET_ARCH"
+        fi
 
     - name: Run Electron-only hooks
       run: |
@@ -479,6 +490,22 @@ jobs:
       env:
         TARGET_ARCH: x64
 
+    - name: Debug RBE auth
+      run: |
+        echo "=== ELECTRON_RBE_JWT diagnostic ==="
+        if [ -z "${ELECTRON_RBE_JWT:-}" ]; then
+          echo "ELECTRON_RBE_JWT is NOT set (empty or missing)"
+        else
+          echo "ELECTRON_RBE_JWT is set, length=${#ELECTRON_RBE_JWT}"
+          echo "First 20 chars: ${ELECTRON_RBE_JWT:0:20}..."
+        fi
+        echo ""
+        echo "=== e d rbe login ==="
+        e d rbe login || echo "(rbe login exited with $?)"
+        echo ""
+        echo "=== e d rbe get ==="
+        e d rbe get || echo "(rbe get exited with $?)"
+
     - name: Init build configuration
       run: |
         if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
@@ -497,10 +524,18 @@ jobs:
           } >> "$GITHUB_ENV"
         fi
 
-        e init -f --root=$(pwd) --out=Default \
-          "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
-          --target-cpu "$TARGET_ARCH" \
-          --remote-build siso
+        # Use siso remote build only when RBE credentials are available.
+        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ] || [ -n "${ELECTRON_RBE_JWT:-}" ]; then
+          e init -f --root=$(pwd) --out=Default \
+            "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
+            --target-cpu "$TARGET_ARCH" \
+            --remote-build siso
+        else
+          echo "No RBE credentials available — building locally without remote cache"
+          e init -f --root=$(pwd) --out=Default \
+            "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
+            --target-cpu "$TARGET_ARCH"
+        fi
 
     - name: Run Electron-only hooks
       run: |
@@ -613,10 +648,18 @@ jobs:
           } >> "$GITHUB_ENV"
         fi
 
-        e init -f --root=$(pwd) --out=Default \
-          "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
-          --target-cpu "$TARGET_ARCH" \
-          --remote-build siso
+        # Use siso remote build only when RBE credentials are available.
+        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ] || [ -n "${ELECTRON_RBE_JWT:-}" ]; then
+          e init -f --root=$(pwd) --out=Default \
+            "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
+            --target-cpu "$TARGET_ARCH" \
+            --remote-build siso
+        else
+          echo "No RBE credentials available — building locally without remote cache"
+          e init -f --root=$(pwd) --out=Default \
+            "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
+            --target-cpu "$TARGET_ARCH"
+        fi
 
     - name: Run Electron-only hooks
       run: |
