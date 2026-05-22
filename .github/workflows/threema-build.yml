@@ -497,22 +497,24 @@ jobs:
           echo "ELECTRON_RBE_JWT is NOT set (empty or missing)"
         else
           echo "ELECTRON_RBE_JWT is set, length=${#ELECTRON_RBE_JWT}"
-          echo "First 20 chars: ${ELECTRON_RBE_JWT:0:20}..."
+          # Decode JWT payload (middle segment) to check exp and sub without revealing the token
+          JWT_PAYLOAD=$(echo "$ELECTRON_RBE_JWT" | cut -d. -f2)
+          # Add padding if needed
+          PADDED="${JWT_PAYLOAD}$(python3 -c "print('=' * ((4 - len('${JWT_PAYLOAD}') % 4) % 4))")"
+          echo "JWT payload: $(echo "$PADDED" | base64 -d 2>/dev/null || echo "(decode failed)")"
         fi
         echo ""
-        # rbe login = interactive OAuth, expected to fail in CI
-        echo "=== e d rbe login (expected to fail in CI) ==="
-        e d rbe login || echo "(rbe login exited with $?)"
+        echo "=== Network reachability ==="
+        curl -v --max-time 5 https://auth.notgoma.com 2>&1 | head -20 || echo "(curl exited with $?)"
         echo ""
-        # rbe status and flags may work via ELECTRON_RBE_JWT without a credential file
+        echo "=== credential helper version ==="
+        e d rbe version 2>&1 || e d rbe --version 2>&1 || echo "(no version subcommand)"
+        echo ""
+        echo "=== e d rbe login ==="
+        e d rbe login 2>&1 || echo "(rbe login exited with $?)"
+        echo ""
         echo "=== e d rbe status ==="
-        e d rbe status || echo "(rbe status exited with $?)"
-        echo ""
-        echo "=== e d rbe flags ==="
-        e d rbe flags || echo "(rbe flags exited with $?)"
-        echo ""
-        echo "=== e d rbe print ==="
-        e d rbe print || echo "(rbe print exited with $?)"
+        e d rbe status 2>&1 || echo "(rbe status exited with $?)"
 
     - name: Init build configuration
       run: |
