@@ -236,6 +236,20 @@ Restart-Service "actions.runner.*"
 
 Download the LTS installer from https://nodejs.org.
 
+The installer adds Node.js to the **user** PATH only. The runner service uses
+the **system** PATH and won't find `node`, `npm`, or globally installed tools
+like `e` unless you add both paths explicitly. Run in an elevated PowerShell:
+
+```powershell
+# C:\Program Files\nodejs  — node.exe and npm.cmd
+# C:\Users\<username>\AppData\Roaming\npm  — globally installed CLI tools (e.g. `e`)
+# Replace <username> with the user account that runs the runner service.
+$nodePath  = "C:\Program Files\nodejs"
+$npmPrefix = "C:\Users\<username>\AppData\Roaming\npm"
+$currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+[System.Environment]::SetEnvironmentVariable("PATH", "$currentPath;$nodePath;$npmPrefix", "Machine")
+```
+
 ### 4 — Download and configure the runner
 
 Open PowerShell as the user that will run builds (not Administrator):
@@ -287,6 +301,9 @@ Check logs in `D:\actions-runner\_diag\`.
   multi-GB download on the first run.
 - Antivirus scanning of the build directory can cause significant slowdowns. Add
   `D:\actions-runner\_work` to your antivirus exclusion list.
+- The runner service must be started **after** all system PATH changes are made
+  (Git `bin\`, Node.js, and npm prefix). The service captures PATH at startup
+  and does not pick up changes until it is restarted.
 
 ---
 

@@ -6,38 +6,27 @@ runs:
   - name: Install Build Tools
     shell: bash
     run: |
-      if command -v cygpath >/dev/null 2>&1; then
+      if [ "$(expr substr $(uname -s) 1 10)" == "MSYS_NT-10" ]; then
         git config --global core.filemode false
         git config --global core.autocrlf false
         git config --global branch.autosetuprebase always
         git config --global core.fscache true
         git config --global core.longpaths true
         git config --global core.preloadindex true
+        git config --global core.longpaths true
       fi
       export BUILD_TOOLS_SHA=1b7bd25dae4a780bb3170fff56c9327b53aaf7eb
       npm i -g @electron/build-tools
-      # On Windows (Git Bash) the npm global bin dir isn't in PATH within this
-      # shell session, and the change must be written to $GITHUB_PATH so that
-      # subsequent steps also find `e`. Use cygpath as the Windows detector —
-      # it exists on any MSYS2/MinGW variant and never on Linux/macOS.
-      if command -v cygpath >/dev/null 2>&1; then
-        NPM_PREFIX_WIN="$(npm prefix -g)"
-        export PATH="$(cygpath -u "$NPM_PREFIX_WIN"):$PATH"
-        echo "$NPM_PREFIX_WIN" >> "$GITHUB_PATH"
-      fi
       # Update depot_tools to ensure python
       e d update_depot_tools
       e auto-update disable
       # Disable further updates of depot_tools
       e d auto-update disable
-      if command -v cygpath >/dev/null 2>&1; then
+      if [ "$(expr substr $(uname -s) 1 10)" == "MSYS_NT-10" ]; then
         e d cipd.bat --version
-        # Copy python → python3 if needed (only present in Electron's Docker image)
-        [ -f "/c/Python311/python.exe" ] && [ ! -f "/c/Python311/python3.exe" ] && \
-          cp "/c/Python311/python.exe" "/c/Python311/python3.exe" || true
-        # Use $HOME (resolved at runtime) instead of a hardcoded username
-        echo "$(cygpath -w "$HOME")\.electron_build_tools\third_party\depot_tools" >> "$GITHUB_PATH"
+        cp "C:\Python311\python.exe" "C:\Python311\python3.exe"
+        echo "C:\Users\ContainerAdministrator\.electron_build_tools\third_party\depot_tools" >> $GITHUB_PATH
       else
-        echo "$HOME/.electron_build_tools/third_party/depot_tools" >> "$GITHUB_PATH"
-        echo "$HOME/.electron_build_tools/third_party/depot_tools/python-bin" >> "$GITHUB_PATH"
+        echo "$HOME/.electron_build_tools/third_party/depot_tools" >> $GITHUB_PATH
+        echo "$HOME/.electron_build_tools/third_party/depot_tools/python-bin" >> $GITHUB_PATH
       fi
