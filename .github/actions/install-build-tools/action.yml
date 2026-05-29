@@ -17,6 +17,11 @@ runs:
       fi
       export BUILD_TOOLS_SHA=1b7bd25dae4a780bb3170fff56c9327b53aaf7eb
       npm i -g @electron/build-tools
+      # On Windows (Git Bash) the npm global bin dir isn't in PATH within this
+      # shell session — add it so that the newly installed `e` command is found.
+      if [ "$(expr substr $(uname -s) 1 10)" == "MSYS_NT-10" ]; then
+        export PATH="$(cygpath -u "$(npm prefix -g)"):$PATH"
+      fi
       # Update depot_tools to ensure python
       e d update_depot_tools
       e auto-update disable
@@ -24,8 +29,11 @@ runs:
       e d auto-update disable
       if [ "$(expr substr $(uname -s) 1 10)" == "MSYS_NT-10" ]; then
         e d cipd.bat --version
-        cp "C:\Python311\python.exe" "C:\Python311\python3.exe"
-        echo "C:\Users\ContainerAdministrator\.electron_build_tools\third_party\depot_tools" >> $GITHUB_PATH
+        # Copy python → python3 if needed (only present in Electron's Docker image)
+        [ -f "/c/Python311/python.exe" ] && [ ! -f "/c/Python311/python3.exe" ] && \
+          cp "/c/Python311/python.exe" "/c/Python311/python3.exe" || true
+        # Use $HOME (resolved at runtime) instead of a hardcoded username
+        echo "$(cygpath -w "$HOME")\.electron_build_tools\third_party\depot_tools" >> $GITHUB_PATH
       else
         echo "$HOME/.electron_build_tools/third_party/depot_tools" >> $GITHUB_PATH
         echo "$HOME/.electron_build_tools/third_party/depot_tools/python-bin" >> $GITHUB_PATH
