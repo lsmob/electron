@@ -220,6 +220,18 @@ Download from https://git-scm.com/download/win. During setup, enable:
 - **Git Credential Manager**
 - **Enable long paths** (if not already set via registry)
 
+After installation, add Git's `bin` directory to the **system** PATH so that
+`bash.exe` is available to the runner service (the installer only adds `cmd\`
+by default). Run this in an elevated PowerShell, then restart the service so
+it picks up the new PATH:
+
+```powershell
+$gitBin = "C:\Program Files\Git\bin"
+$currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+[System.Environment]::SetEnvironmentVariable("PATH", "$currentPath;$gitBin", "Machine")
+Restart-Service "actions.runner.*"
+```
+
 ### 3 — Install Node.js
 
 Download the LTS installer from https://nodejs.org.
