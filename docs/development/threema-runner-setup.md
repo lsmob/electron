@@ -244,16 +244,28 @@ Expand-Archive actions-runner-win-x64.zip -DestinationPath .
   --name windows-builder `
   --labels self-hosted,Windows,x64 `
   --work D:\actions-runner\_work `
-  --unattended
+  --unattended `
+  --runasservice
 ```
 
-### 5 — Install as a Windows service
+### 5 — Start the Windows service
+
+The runner is registered as a Windows service automatically by `config.cmd` — there is
+no separate install step. Manage it with PowerShell (run as Administrator):
 
 ```powershell
-.\svc.cmd install
-.\svc.cmd start
-.\svc.cmd status
+# Start
+Start-Service "actions.runner.*"
+
+# Check status
+Get-Service "actions.runner.*" | Select-Object Name, Status, StartType
+
+# Stop
+Stop-Service "actions.runner.*"
 ```
+
+The service is configured to start automatically on boot. You can also manage it via
+the Windows **Services** application (`services.msc`).
 
 Check logs in `D:\actions-runner\_diag\`.
 
