@@ -19,7 +19,9 @@ runs:
       npm i -g @electron/build-tools
       # On Windows (Git Bash) the npm global bin dir isn't in PATH within this
       # shell session — add it so that the newly installed `e` command is found.
-      if [ "$(expr substr $(uname -s) 1 10)" == "MSYS_NT-10" ]; then
+      # Use `cygpath` as the Windows detector: it exists on any MSYS2/MinGW
+      # variant (MSYS_NT-*, MINGW64_NT-*, …) and never on Linux/macOS.
+      if command -v cygpath >/dev/null 2>&1; then
         export PATH="$(cygpath -u "$(npm prefix -g)"):$PATH"
       fi
       # Update depot_tools to ensure python
