@@ -236,19 +236,23 @@ Restart-Service "actions.runner.*"
 
 Download the LTS installer from https://nodejs.org.
 
-The installer adds Node.js to the **user** PATH only. The runner service uses
-the **system** PATH and won't find `node`, `npm`, or globally installed tools
-like `e` unless you add both paths explicitly. Run in an elevated PowerShell:
+The installer adds Node.js to the **user** PATH only. The runner service runs
+as `NT AUTHORITY\NETWORK SERVICE` and uses the **system** PATH. Add both the
+Node.js directory and the `NETWORK SERVICE` npm prefix to system PATH in an
+elevated PowerShell:
 
 ```powershell
-# C:\Program Files\nodejs  — node.exe and npm.cmd
-# C:\Users\<username>\AppData\Roaming\npm  — globally installed CLI tools (e.g. `e`)
-# Replace <username> with the user account that runs the runner service.
+# C:\Program Files\nodejs       — node.exe and npm.cmd
+# NetworkService AppData\npm    — globally installed CLI tools installed by the
+#                                 runner service (e.g. `e` from @electron/build-tools)
 $nodePath  = "C:\Program Files\nodejs"
-$npmPrefix = "C:\Users\<username>\AppData\Roaming\npm"
+$npmPrefix = "C:\Windows\ServiceProfiles\NetworkService\AppData\Roaming\npm"
 $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 [System.Environment]::SetEnvironmentVariable("PATH", "$currentPath;$nodePath;$npmPrefix", "Machine")
 ```
+
+> The `npm` prefix is `%APPDATA%\npm` evaluated as the service account, which
+> resolves to the `NetworkService` profile — not to any user's home directory.
 
 ### 4 — Download and configure the runner
 
