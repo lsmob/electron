@@ -201,17 +201,23 @@ tail -f ~/Library/Logs/actions.runner.lsmob-electron.macos-intel-builder/Runner_
 
 ## Windows x64
 
-The build runs natively on Windows. `depot_tools` downloads and manages the MSVC
-toolchain automatically — no manual Visual Studio installation needed.
+The build runs natively on Windows. `depot_tools` downloads the MSVC toolchain
+for the Chromium/Electron build, but Visual Studio Build Tools must also be
+installed separately so that node-gyp can compile Electron's native test
+fixtures during `yarn install`.
 
-### 1 — Enable long paths
+### 1 — Enable long paths and script execution
 
 Open PowerShell as Administrator:
 
 ```powershell
+# Allow long file paths (required for Chromium source tree)
 Set-ItemProperty `
   -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
   -Name LongPathsEnabled -Value 1
+
+# Allow PowerShell scripts to run (required by the runner and depot_tools)
+Set-ExecutionPolicy Bypass -Scope LocalMachine -Force
 ```
 
 ### 2 — Install Git for Windows
@@ -254,7 +260,38 @@ $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 > The `npm` prefix is `%APPDATA%\npm` evaluated as the service account, which
 > resolves to the `NetworkService` profile — not to any user's home directory.
 
-### 4 — Download and configure the runner
+### 4 — Install Visual Studio Build Tools
+
+Required by node-gyp to compile Electron's native test fixtures during
+`yarn install`. Download and run the bootstrapper (~3 GB, 10–15 min):
+
+```powershell
+Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" `
+  -OutFile "$env:TEMP\vs_buildtools.exe"
+
+& "$env:TEMP\vs_buildtools.exe" --quiet --wait --norestart `
+  --add Microsoft.VisualStudio.Workload.VCTools `
+  --includeRecommended
+```
+
+If the install completes but node-gyp still reports **"missing any VC++ toolset"**,
+the workload was registered without the compiler. Fix it using the VS Installer
+that was already placed on disk:
+
+```powershell
+Start-Process -Wait `
+  -FilePath "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe" `
+  -ArgumentList 'modify --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools" --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --includeRecommended --quiet --norestart'
+```
+
+Alternatively open the Visual Studio Installer GUI (`setup.exe` above without
+arguments), click **Modify** on the BuildTools entry and tick
+**Desktop development with C++**.
+
+node-gyp finds MSVC automatically via the registry — no PATH changes or
+runner restart needed.
+
+### 5 — Download and configure the runner
 
 Open PowerShell as the user that will run builds (not Administrator):
 
@@ -278,7 +315,7 @@ Expand-Archive actions-runner-win-x64.zip -DestinationPath .
   --runasservice
 ```
 
-### 5 — Start the Windows service
+### 6 — Start the Windows service
 
 The runner is registered as a Windows service automatically by `config.cmd` — there is
 no separate install step. Manage it with PowerShell (run as Administrator):
