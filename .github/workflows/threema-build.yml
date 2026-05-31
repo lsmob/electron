@@ -597,6 +597,8 @@ jobs:
       ELECTRON_RBE_JWT: ${{ secrets.ELECTRON_RBE_JWT }}
 
       CHROMIUM_GIT_COOKIE_WINDOWS_STRING: ${{ secrets.CHROMIUM_GIT_COOKIE_WINDOWS_STRING }}
+      # Suppress "Running ..." prefix from e d so command output isn't polluted
+      ELECTRON_DEPOT_TOOLS_DISABLE_LOG: '1'
       # Let depot_tools download the pinned MSVC toolchain
       ELECTRON_DEPOT_TOOLS_WIN_TOOLCHAIN: '1'
       DEPOT_TOOLS_WIN_TOOLCHAIN: '1'
