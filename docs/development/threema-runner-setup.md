@@ -251,10 +251,13 @@ elevated PowerShell:
 # C:\Program Files\nodejs       — node.exe and npm.cmd
 # NetworkService AppData\npm    — globally installed CLI tools installed by the
 #                                 runner service (e.g. `e` from @electron/build-tools)
-$nodePath  = "C:\Program Files\nodejs"
-$npmPrefix = "C:\Windows\ServiceProfiles\NetworkService\AppData\Roaming\npm"
+$nodePath    = "C:\Program Files\nodejs"
+$npmPrefix   = "C:\Windows\ServiceProfiles\NetworkService\AppData\Roaming\npm"
+# depot_tools is installed here by install-build-tools on the first run.
+# Adding it upfront makes python3.bat visible to PowerShell steps in fix-sync.
+$depotTools  = "C:\Windows\ServiceProfiles\NetworkService\.electron_build_tools\third_party\depot_tools"
 $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
-[System.Environment]::SetEnvironmentVariable("PATH", "$currentPath;$nodePath;$npmPrefix", "Machine")
+[System.Environment]::SetEnvironmentVariable("PATH", "$currentPath;$nodePath;$npmPrefix;$depotTools", "Machine")
 ```
 
 > The `npm` prefix is `%APPDATA%\npm` evaluated as the service account, which
