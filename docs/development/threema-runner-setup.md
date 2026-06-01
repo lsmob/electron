@@ -111,10 +111,12 @@ platform-specific toolchain binaries (clang, gn, ninja, siso) after `gclient syn
 ### 1 — Install Xcode
 
 Install Xcode from the App Store (full Xcode, not just Command Line Tools).
-After installing, accept the license:
+After installing, accept the license and download the Metal shader toolchain
+(split out from Xcode since Xcode 14):
 
 ```bash
 sudo xcodebuild -license accept
+sudo xcodebuild -downloadComponent MetalToolchain
 ```
 
 ### 2 — Install Homebrew and dependencies
