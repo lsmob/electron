@@ -359,6 +359,21 @@ jobs:
       env:
         TARGET_ARCH: arm64
 
+    - name: Fix dsymutil for cross-compilation
+      run: |
+        # fix-sync picks dsymutil by TARGET_ARCH, but dsymutil must run on the
+        # host. When cross-compiling, re-download the host-arch binary instead.
+        HOST_ARCH=$(uname -m | sed 's/x86_64/x64/')
+        if [ "$HOST_ARCH" != "$TARGET_ARCH" ]; then
+          echo "Cross-compiling ($HOST_ARCH host → $TARGET_ARCH target): fixing dsymutil"
+          python3 src/third_party/depot_tools/download_from_google_storage.py \
+            --no_resume --no_auth --bucket chromium-browser-clang \
+            -s "src/tools/clang/dsymutil/bin/dsymutil.${HOST_ARCH}.sha1" \
+            -o src/tools/clang/dsymutil/bin/dsymutil
+        else
+          echo "Native build ($TARGET_ARCH): dsymutil already correct, skipping"
+        fi
+
     - name: Init build configuration
       run: |
         if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
