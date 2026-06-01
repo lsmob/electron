@@ -90,6 +90,7 @@ jobs:
     name: 'Linux / x64'
     if: ${{ github.repository == 'lsmob/electron' && inputs.build-linux-x64 }}
     runs-on: [self-hosted, linux, x64]
+    timeout-minutes: 720
     container:
       image: ghcr.io/electron/build:daad061f4b99a0ae1c841be4aa09188280a9c8a4
       options: --user root
@@ -201,6 +202,7 @@ jobs:
     name: 'Linux / arm64'
     if: ${{ github.repository == 'lsmob/electron' && inputs.build-linux-arm64 }}
     runs-on: [self-hosted, linux, x64]
+    timeout-minutes: 720
     container:
       image: ghcr.io/electron/build:daad061f4b99a0ae1c841be4aa09188280a9c8a4
       options: --user root
@@ -305,6 +307,7 @@ jobs:
     # workflow_dispatch only — no macOS runner on push until runner is available
     if: ${{ github.repository == 'lsmob/electron' && github.event_name == 'workflow_dispatch' && inputs.build-macos-arm64 }}
     runs-on: [self-hosted, macOS, X64]
+    timeout-minutes: 720
     env:
       TARGET_ARCH: arm64
       TARGET_PLATFORM: macos
@@ -450,6 +453,7 @@ jobs:
     # workflow_dispatch only — no macOS runner on push until runner is available
     if: ${{ github.repository == 'lsmob/electron' && github.event_name == 'workflow_dispatch' && inputs.build-macos-x64 }}
     runs-on: [self-hosted, macOS, X64]
+    timeout-minutes: 720
     env:
       TARGET_ARCH: x64
       TARGET_PLATFORM: macos
@@ -579,6 +583,7 @@ jobs:
     # workflow_dispatch only — no Windows runner on push until runner is available
     if: ${{ github.repository == 'lsmob/electron' && github.event_name == 'workflow_dispatch' && inputs.build-windows }}
     runs-on: [self-hosted, Windows, x64]
+    timeout-minutes: 720  # 12 hours — first build takes ~10h locally without RBE
     env:
       TARGET_ARCH: x64
       TARGET_PLATFORM: win
