@@ -167,7 +167,6 @@ jobs:
         cd src/electron && git pack-refs && cd ../..
         # Clean if out/Default has ninja artifacts — needed once when migrating to siso.
         # Subsequent builds are incremental; RBE cache keeps this fast.
-        cd src && e d gn clean out/Default 2>/dev/null || true && cd ..
         if [ "$GN_BUILD_TYPE" = "release" ]; then
           NINJA_SUMMARIZE_BUILD=1 e build --target electron:release_build
         else
@@ -278,7 +277,6 @@ jobs:
     - name: Build Electron
       run: |
         cd src/electron && git pack-refs && cd ../..
-        cd src && e d gn clean out/Default 2>/dev/null || true && cd ..
         if [ "$GN_BUILD_TYPE" = "release" ]; then
           NINJA_SUMMARIZE_BUILD=1 e build --target electron:release_build
         else
@@ -424,7 +422,6 @@ jobs:
     - name: Build Electron
       run: |
         cd src/electron && git pack-refs && cd ../..
-        cd src && e d gn clean out/Default 2>/dev/null || true && cd ..
         if [ "$GN_BUILD_TYPE" = "release" ]; then
           NINJA_SUMMARIZE_BUILD=1 e build --target electron:release_build
         else
@@ -554,7 +551,6 @@ jobs:
     - name: Build Electron
       run: |
         cd src/electron && git pack-refs && cd ../..
-        cd src && e d gn clean out/Default 2>/dev/null || true && cd ..
         if [ "$GN_BUILD_TYPE" = "release" ]; then
           NINJA_SUMMARIZE_BUILD=1 e build --target electron:release_build
         else
@@ -688,10 +684,6 @@ jobs:
         cd src\electron
         git pack-refs
         cd ..\..
-
-        cd src
-        e.cmd d gn clean out/Default 2>$null
-        cd ..
 
         $env:NINJA_SUMMARIZE_BUILD = 1
         if ($env:GN_BUILD_TYPE -eq "release") {
