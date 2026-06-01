@@ -663,6 +663,7 @@ jobs:
     - name: Build Electron (Windows)
       shell: powershell
       run: |
+        $ErrorActionPreference = 'Continue'
         cd src\electron
         git pack-refs
         cd ..\..
@@ -685,6 +686,7 @@ jobs:
     - name: Build Chromedriver (Windows)
       shell: powershell
       run: |
+        $ErrorActionPreference = 'Continue'
         cd src
         e.cmd build --target electron:electron_chromedriver_zip
 
