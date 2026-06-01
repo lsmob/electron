@@ -357,7 +357,6 @@ Set these in `https://github.com/lsmob/electron/settings/secrets/actions`:
 
 | Secret | Required | Purpose |
 |---|---|---|
-| `ELECTRON_RBE_JWT` | Optional | Enables Electron's siso remote build cache. When absent, all compilation happens locally on the runner. |
 | `CHROMIUM_GIT_COOKIE` | Optional | Raises Chromium git server rate limits. Builds work without it but may be throttled during `gclient sync`. |
 | `CHROMIUM_GIT_COOKIE_WINDOWS_STRING` | Optional | Same as above, Windows format. |
 

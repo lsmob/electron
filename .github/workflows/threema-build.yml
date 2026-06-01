@@ -442,7 +442,6 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_mac=True --custom-var=host_os=mac'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
-      ELECTRON_RBE_JWT: ${{ secrets.ELECTRON_RBE_JWT }}
       ELECTRON_DEPOT_TOOLS_DISABLE_LOG: "1"
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
@@ -489,30 +488,6 @@ jobs:
         target-platform: macos
       env:
         TARGET_ARCH: x64
-
-    - name: Debug RBE auth
-      run: |
-        echo "=== Find credential helper binary ==="
-        HELPER=$(find ~ -name "electron-rbe-credential-helper" 2>/dev/null | head -1 || true)
-        echo "Helper path: ${HELPER:-(not found)}"
-        echo ""
-        echo "=== Strings search for credential file path ==="
-        if [ -n "$HELPER" ]; then
-          strings "$HELPER" | grep -iE "(home|config|library|cache|cred|token|notgoma|electron.rbe)" | sort -u
-        fi
-        echo ""
-        echo "=== Provision credential file and retest ==="
-        # Attempt to write JWT to likely locations and see which makes rbe status pass
-        for CRED_DIR in \
-          "$HOME/.config/electron-rbe-credential-helper" \
-          "$HOME/Library/Application Support/electron-rbe-credential-helper" \
-          "$HOME/.electron-rbe"; do
-          mkdir -p "$CRED_DIR"
-          echo "$ELECTRON_RBE_JWT" > "$CRED_DIR/creds"
-          echo "--- tried $CRED_DIR/creds ---"
-          e d rbe status 2>&1 && echo "STATUS PASSED with $CRED_DIR/creds" && break
-          rm -f "$CRED_DIR/creds"
-        done || true
 
     - name: Init build configuration
       run: |
@@ -693,14 +668,14 @@ jobs:
         cd ..\..
 
         cd src
-        e d gn clean out/Default 2>$null
+        e.cmd d gn clean out/Default 2>$null
         cd ..
 
         $env:NINJA_SUMMARIZE_BUILD = 1
         if ($env:GN_BUILD_TYPE -eq "release") {
-          e build --target electron:release_build
+          e.cmd build --target electron:release_build
         } else {
-          e build --target electron:testing_build
+          e.cmd build --target electron:testing_build
         }
         if ($LASTEXITCODE -ne 0) {
           Write-Host "e build failed with exit code $LASTEXITCODE"
@@ -711,7 +686,7 @@ jobs:
       shell: powershell
       run: |
         cd src
-        e build --target electron:electron_chromedriver_zip
+        e.cmd build --target electron:electron_chromedriver_zip
 
     - name: Upload dist artifacts
       if: always() && !cancelled()
