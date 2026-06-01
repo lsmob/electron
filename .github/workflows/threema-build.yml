@@ -311,9 +311,9 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_mac=True --custom-var=host_os=mac'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
-      ELECTRON_RBE_JWT: ${{ secrets.ELECTRON_RBE_JWT }}
       ELECTRON_DEPOT_TOOLS_DISABLE_LOG: "1"
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
+      TOOLCHAINS: Metal
 
     steps:
     - name: Checkout Electron
@@ -392,11 +392,9 @@ jobs:
           } >> "$GITHUB_ENV"
         fi
 
-        # Use siso remote build only when RBE credentials are available.
-        # macOS native runners don't have Electron's RBE pre-configured (unlike
-        # the Linux Docker image), so fall back to a local build when neither
-        # EngFlow nor ELECTRON_RBE_JWT is provided.
-        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ] || [ -n "${ELECTRON_RBE_JWT:-}" ]; then
+        # Use siso remote build only when EngFlow credentials are available.
+        # macOS native runners fall back to a local build otherwise.
+        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
           e init -f --root=$(pwd) --out=Default \
             "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
             --target-cpu "$TARGET_ARCH" \
@@ -460,6 +458,7 @@ jobs:
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
       ELECTRON_DEPOT_TOOLS_DISABLE_LOG: "1"
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
+      TOOLCHAINS: Metal
 
     steps:
     - name: Checkout Electron
@@ -524,7 +523,7 @@ jobs:
         fi
 
         # Use siso remote build only when RBE credentials are available.
-        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ] || [ -n "${ELECTRON_RBE_JWT:-}" ]; then
+        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
           e init -f --root=$(pwd) --out=Default \
             "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
             --target-cpu "$TARGET_ARCH" \
@@ -586,7 +585,6 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_win=True'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
       ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
-      ELECTRON_RBE_JWT: ${{ secrets.ELECTRON_RBE_JWT }}
 
       CHROMIUM_GIT_COOKIE_WINDOWS_STRING: ${{ secrets.CHROMIUM_GIT_COOKIE_WINDOWS_STRING }}
       # Suppress "Running ..." prefix from e d so command output isn't polluted
@@ -651,7 +649,7 @@ jobs:
         fi
 
         # Use siso remote build only when RBE credentials are available.
-        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ] || [ -n "${ELECTRON_RBE_JWT:-}" ]; then
+        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
           e init -f --root=$(pwd) --out=Default \
             "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
             --target-cpu "$TARGET_ARCH" \

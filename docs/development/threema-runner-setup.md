@@ -119,6 +119,25 @@ sudo xcodebuild -license accept
 sudo xcodebuild -downloadComponent MetalToolchain
 ```
 
+`xcodebuild -downloadComponent` only downloads the toolchain DMG — it must be
+installed manually. Mount the downloaded DMG and copy the toolchain into Xcode:
+
+```bash
+DMG=$(find /System/Library/AssetsV2/com_apple_MobileAsset_MetalToolchain \
+  -name "*.dmg" | head -1)
+hdiutil attach "$DMG" -mountpoint /tmp/metal-toolchain
+sudo cp -a /tmp/metal-toolchain/Metal.xctoolchain \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/
+hdiutil detach /tmp/metal-toolchain
+```
+
+Verify:
+```bash
+xcrun --toolchain Metal metal --version
+```
+
+The workflow sets `TOOLCHAINS=Metal` so the build picks it up automatically.
+
 ### 2 — Install Homebrew and dependencies
 
 ```bash
