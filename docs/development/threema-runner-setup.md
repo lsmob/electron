@@ -263,7 +263,6 @@ it picks up the new PATH:
 $gitBin = "C:\Program Files\Git\bin"
 $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 [System.Environment]::SetEnvironmentVariable("PATH", "$currentPath;$gitBin", "Machine")
-Restart-Service "actions.runner.*"
 ```
 
 ### 3 — Install Node.js
@@ -349,8 +348,6 @@ Add-MpPreference -ExclusionPath "D:\actions-runner\_work"
 ```
 
 ### 7 — Download and configure the runner
-
-Open PowerShell as the user that will run builds (not Administrator):
 
 ```powershell
 New-Item -ItemType Directory -Path D:\actions-runner   # choose a drive with 200 GB+
