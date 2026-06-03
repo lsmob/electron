@@ -424,6 +424,7 @@ jobs:
     - name: Build Electron
       run: |
         cd src/electron && git pack-refs && cd ../..
+        cd src && e d gn clean out/Default && cd ..
         if [ "$GN_BUILD_TYPE" = "release" ]; then
           NINJA_SUMMARIZE_BUILD=1 e build --target electron:release_build
         else
@@ -553,6 +554,7 @@ jobs:
     - name: Build Electron
       run: |
         cd src/electron && git pack-refs && cd ../..
+        cd src && e d gn clean out/Default && cd ..
         if [ "$GN_BUILD_TYPE" = "release" ]; then
           NINJA_SUMMARIZE_BUILD=1 e build --target electron:release_build
         else
@@ -687,6 +689,7 @@ jobs:
         git pack-refs
         cd ..\..
 
+        e.cmd d gn clean out\Default
         $env:NINJA_SUMMARIZE_BUILD = 1
         if ($env:GN_BUILD_TYPE -eq "release") {
           e.cmd build --target electron:release_build
