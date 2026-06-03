@@ -154,11 +154,6 @@ jobs:
           "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
           --target-cpu "$TARGET_ARCH" \
           --remote-build siso
-        # gn gen (run by e init) writes build.ninja but never creates
-        # build.ninja.stamp. Touch the stamp so ninja considers the build
-        # system current and skips the REGENERATE_BUILD rule entirely.
-        touch src/out/Default/build.ninja.stamp
-
     - name: Run Electron-only hooks
       run: |
         e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
@@ -271,11 +266,6 @@ jobs:
           "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
           --target-cpu "$TARGET_ARCH" \
           --remote-build siso
-        # gn gen (run by e init) writes build.ninja but never creates
-        # build.ninja.stamp. Touch the stamp so ninja considers the build
-        # system current and skips the REGENERATE_BUILD rule entirely.
-        touch src/out/Default/build.ninja.stamp
-
     - name: Run Electron-only hooks
       run: |
         e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
@@ -349,8 +339,7 @@ jobs:
         # are treated as fatal in --regeneration mode).
         #
         # Removing out/Default here ensures e init's gn gen runs on a clean
-        # slate. The `touch build.ninja.stamp` in the Init step then tells
-        # ninja the build system is current so it never attempts regeneration.
+        # slate with no stale arch artifacts.
         # ──────────────────────────────────────────────────────────────────────
         rm -rf src/out/Default 2>/dev/null || true
 
@@ -438,13 +427,6 @@ jobs:
             --target-cpu "$TARGET_ARCH" \
             --remote-build none
         fi
-        # gn gen (run by e init) writes build.ninja but never creates
-        # build.ninja.stamp. Ninja creates the stamp only via a successful
-        # gn --regeneration gen ., which fails on macOS with Xcode 26. Touch
-        # the stamp here so ninja considers the build system current and skips
-        # the REGENERATE_BUILD rule entirely.
-        touch src/out/Default/build.ninja.stamp
-
     - name: Run Electron-only hooks
       run: |
         e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
@@ -519,8 +501,7 @@ jobs:
         # are treated as fatal in --regeneration mode).
         #
         # Removing out/Default here ensures e init's gn gen runs on a clean
-        # slate. The `touch build.ninja.stamp` in the Init step then tells
-        # ninja the build system is current so it never attempts regeneration.
+        # slate with no stale arch artifacts.
         # ──────────────────────────────────────────────────────────────────────
         rm -rf src/out/Default 2>/dev/null || true
 
@@ -592,13 +573,6 @@ jobs:
             --target-cpu "$TARGET_ARCH" \
             --remote-build none
         fi
-        # gn gen (run by e init) writes build.ninja but never creates
-        # build.ninja.stamp. Ninja creates the stamp only via a successful
-        # gn --regeneration gen ., which fails on macOS with Xcode 26. Touch
-        # the stamp here so ninja considers the build system current and skips
-        # the REGENERATE_BUILD rule entirely.
-        touch src/out/Default/build.ninja.stamp
-
     - name: Run Electron-only hooks
       run: |
         e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
@@ -674,8 +648,6 @@ jobs:
         # Remove stale out/Default so that e init's gn gen runs on a clean
         # slate. Without this, a changed args.gn would make ninja trigger
         # gn --regeneration gen ., which may fail on some SDK configurations.
-        # The `touch build.ninja.stamp` in the Init step then tells ninja the
-        # build system is current so it never attempts regeneration.
         rm -rf src/out/Default 2>/dev/null || true
 
     - name: Set Chromium Git Cookie
@@ -732,11 +704,6 @@ jobs:
             --target-cpu "$TARGET_ARCH" \
             --remote-build none
         fi
-        # gn gen (run by e init) writes build.ninja but never creates
-        # build.ninja.stamp. Touch the stamp so ninja considers the build
-        # system current and skips the REGENERATE_BUILD rule entirely.
-        touch src/out/Default/build.ninja.stamp
-
     - name: Run Electron-only hooks
       run: |
         e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False,'checkout_win':True},'managed':False}]"
