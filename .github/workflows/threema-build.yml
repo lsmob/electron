@@ -110,6 +110,9 @@ jobs:
         path: src/electron
         fetch-depth: 0
 
+    - name: Clean build output
+      run: |
+        rm -rf src/out/Default 2>/dev/null || true
 
     - name: Set Chromium Git Cookie
       uses: ./src/electron/.github/actions/set-chromium-cookie
@@ -128,13 +131,6 @@ jobs:
         DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
         ELECTRON_USE_THREE_WAY_MERGE_FOR_PATCHES=1 \
           e d gclient sync --with_branch_heads --with_tags
-
-    - name: Run Electron-only hooks
-      run: |
-        e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
-
-    - name: Add CHROMIUM_BUILDTOOLS_PATH
-      run: echo "CHROMIUM_BUILDTOOLS_PATH=$(pwd)/src/buildtools" >> $GITHUB_ENV
 
     - name: Init build configuration
       run: |
@@ -158,6 +154,17 @@ jobs:
           "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
           --target-cpu "$TARGET_ARCH" \
           --remote-build siso
+        # gn gen (run by e init) writes build.ninja but never creates
+        # build.ninja.stamp. Touch the stamp so ninja considers the build
+        # system current and skips the REGENERATE_BUILD rule entirely.
+        touch src/out/Default/build.ninja.stamp
+
+    - name: Run Electron-only hooks
+      run: |
+        e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
+
+    - name: Add CHROMIUM_BUILDTOOLS_PATH
+      run: echo "CHROMIUM_BUILDTOOLS_PATH=$(pwd)/src/buildtools" >> $GITHUB_ENV
 
     - name: Install yarn dependencies
       uses: ./src/electron/.github/actions/install-dependencies
@@ -165,9 +172,6 @@ jobs:
     - name: Build Electron
       run: |
         cd src/electron && git pack-refs && cd ../..
-        # gn clean on Linux: RBE cache makes this a ~2 min full rebuild anyway,
-        # and avoids stale webpack/TypeScript cache across runs.
-        cd src && e d gn clean out/Default && cd ..
         if [ "$GN_BUILD_TYPE" = "release" ]; then
           NINJA_SUMMARIZE_BUILD=1 e build --target electron:release_build
         else
@@ -223,6 +227,9 @@ jobs:
         path: src/electron
         fetch-depth: 0
 
+    - name: Clean build output
+      run: |
+        rm -rf src/out/Default 2>/dev/null || true
 
     - name: Set Chromium Git Cookie
       uses: ./src/electron/.github/actions/set-chromium-cookie
@@ -241,13 +248,6 @@ jobs:
         DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
         ELECTRON_USE_THREE_WAY_MERGE_FOR_PATCHES=1 \
           e d gclient sync --with_branch_heads --with_tags
-
-    - name: Run Electron-only hooks
-      run: |
-        e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
-
-    - name: Add CHROMIUM_BUILDTOOLS_PATH
-      run: echo "CHROMIUM_BUILDTOOLS_PATH=$(pwd)/src/buildtools" >> $GITHUB_ENV
 
     - name: Init build configuration
       run: |
@@ -271,6 +271,17 @@ jobs:
           "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
           --target-cpu "$TARGET_ARCH" \
           --remote-build siso
+        # gn gen (run by e init) writes build.ninja but never creates
+        # build.ninja.stamp. Touch the stamp so ninja considers the build
+        # system current and skips the REGENERATE_BUILD rule entirely.
+        touch src/out/Default/build.ninja.stamp
+
+    - name: Run Electron-only hooks
+      run: |
+        e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
+
+    - name: Add CHROMIUM_BUILDTOOLS_PATH
+      run: echo "CHROMIUM_BUILDTOOLS_PATH=$(pwd)/src/buildtools" >> $GITHUB_ENV
 
     - name: Install yarn dependencies
       uses: ./src/electron/.github/actions/install-dependencies
@@ -278,7 +289,6 @@ jobs:
     - name: Build Electron
       run: |
         cd src/electron && git pack-refs && cd ../..
-        cd src && e d gn clean out/Default && cd ..
         if [ "$GN_BUILD_TYPE" = "release" ]; then
           NINJA_SUMMARIZE_BUILD=1 e build --target electron:release_build
         else
@@ -324,6 +334,25 @@ jobs:
       with:
         path: src/electron
         fetch-depth: 0
+
+    - name: Clean build output
+      run: |
+        # ──────────────────────────────────────────────────────────────────────
+        # TEMPORARY: Remove this step once arm64 and x64 have separate
+        # dedicated runners.
+        #
+        # When the same persistent runner is reused for both x64 and arm64
+        # builds, the previous build's out/Default (compiled for a different
+        # arch) stays on disk. Switching arches changes args.gn, which makes
+        # ninja trigger `gn --regeneration gen .`. On macOS with Xcode 26 that
+        # command fails fatally (MacOSX26.1.sdk xcode_links dependency errors
+        # are treated as fatal in --regeneration mode).
+        #
+        # Removing out/Default here ensures e init's gn gen runs on a clean
+        # slate. The `touch build.ninja.stamp` in the Init step then tells
+        # ninja the build system is current so it never attempts regeneration.
+        # ──────────────────────────────────────────────────────────────────────
+        rm -rf src/out/Default 2>/dev/null || true
 
     - name: Setup Node.js
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
@@ -377,17 +406,8 @@ jobs:
           echo "Native build ($TARGET_ARCH): dsymutil already correct, skipping"
         fi
 
-    - name: Run Electron-only hooks
-      run: |
-        e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
-
-    - name: Add CHROMIUM_BUILDTOOLS_PATH
-      run: echo "CHROMIUM_BUILDTOOLS_PATH=$(pwd)/src/buildtools" >> $GITHUB_ENV
-
     - name: Init build configuration
       run: |
-        cd src && e d gn clean out/Default 2>/dev/null || true && cd ..
-
         if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
           echo "EngFlow credentials present — routing reclient to EngFlow RBE"
           ENGFLOW_CREDS="/tmp/engflow-creds.json"
@@ -418,6 +438,19 @@ jobs:
             --target-cpu "$TARGET_ARCH" \
             --remote-build none
         fi
+        # gn gen (run by e init) writes build.ninja but never creates
+        # build.ninja.stamp. Ninja creates the stamp only via a successful
+        # gn --regeneration gen ., which fails on macOS with Xcode 26. Touch
+        # the stamp here so ninja considers the build system current and skips
+        # the REGENERATE_BUILD rule entirely.
+        touch src/out/Default/build.ninja.stamp
+
+    - name: Run Electron-only hooks
+      run: |
+        e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
+
+    - name: Add CHROMIUM_BUILDTOOLS_PATH
+      run: echo "CHROMIUM_BUILDTOOLS_PATH=$(pwd)/src/buildtools" >> $GITHUB_ENV
 
     - name: Install yarn dependencies
       uses: ./src/electron/.github/actions/install-dependencies
@@ -472,6 +505,25 @@ jobs:
         path: src/electron
         fetch-depth: 0
 
+    - name: Clean build output
+      run: |
+        # ──────────────────────────────────────────────────────────────────────
+        # TEMPORARY: Remove this step once arm64 and x64 have separate
+        # dedicated runners.
+        #
+        # When the same persistent runner is reused for both x64 and arm64
+        # builds, the previous build's out/Default (compiled for a different
+        # arch) stays on disk. Switching arches changes args.gn, which makes
+        # ninja trigger `gn --regeneration gen .`. On macOS with Xcode 26 that
+        # command fails fatally (MacOSX26.1.sdk xcode_links dependency errors
+        # are treated as fatal in --regeneration mode).
+        #
+        # Removing out/Default here ensures e init's gn gen runs on a clean
+        # slate. The `touch build.ninja.stamp` in the Init step then tells
+        # ninja the build system is current so it never attempts regeneration.
+        # ──────────────────────────────────────────────────────────────────────
+        rm -rf src/out/Default 2>/dev/null || true
+
     - name: Setup Node.js
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
       with:
@@ -509,17 +561,8 @@ jobs:
       env:
         TARGET_ARCH: x64
 
-    - name: Run Electron-only hooks
-      run: |
-        e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
-
-    - name: Add CHROMIUM_BUILDTOOLS_PATH
-      run: echo "CHROMIUM_BUILDTOOLS_PATH=$(pwd)/src/buildtools" >> $GITHUB_ENV
-
     - name: Init build configuration
       run: |
-        cd src && e d gn clean out/Default 2>/dev/null || true && cd ..
-
         if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
           echo "EngFlow credentials present — routing reclient to EngFlow RBE"
           ENGFLOW_CREDS="/tmp/engflow-creds.json"
@@ -549,6 +592,19 @@ jobs:
             --target-cpu "$TARGET_ARCH" \
             --remote-build none
         fi
+        # gn gen (run by e init) writes build.ninja but never creates
+        # build.ninja.stamp. Ninja creates the stamp only via a successful
+        # gn --regeneration gen ., which fails on macOS with Xcode 26. Touch
+        # the stamp here so ninja considers the build system current and skips
+        # the REGENERATE_BUILD rule entirely.
+        touch src/out/Default/build.ninja.stamp
+
+    - name: Run Electron-only hooks
+      run: |
+        e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
+
+    - name: Add CHROMIUM_BUILDTOOLS_PATH
+      run: echo "CHROMIUM_BUILDTOOLS_PATH=$(pwd)/src/buildtools" >> $GITHUB_ENV
 
     - name: Install yarn dependencies
       uses: ./src/electron/.github/actions/install-dependencies
@@ -613,6 +669,14 @@ jobs:
         path: src/electron
         fetch-depth: 0
 
+    - name: Clean build output
+      run: |
+        # Remove stale out/Default so that e init's gn gen runs on a clean
+        # slate. Without this, a changed args.gn would make ninja trigger
+        # gn --regeneration gen ., which may fail on some SDK configurations.
+        # The `touch build.ninja.stamp` in the Init step then tells ninja the
+        # build system is current so it never attempts regeneration.
+        rm -rf src/out/Default 2>/dev/null || true
 
     - name: Set Chromium Git Cookie
       uses: ./src/electron/.github/actions/set-chromium-cookie
@@ -637,17 +701,8 @@ jobs:
       with:
         target-platform: win
 
-    - name: Run Electron-only hooks
-      run: |
-        e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False,'checkout_win':True},'managed':False}]"
-
-    - name: Add CHROMIUM_BUILDTOOLS_PATH
-      run: echo "CHROMIUM_BUILDTOOLS_PATH=$(pwd)/src/buildtools" >> $GITHUB_ENV
-
     - name: Init build configuration
       run: |
-        e.cmd d gn clean out\\Default 2>/dev/null || true
-
         if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
           echo "EngFlow credentials present — routing reclient to EngFlow RBE"
           ENGFLOW_CREDS="/tmp/engflow-creds.json"
@@ -677,6 +732,17 @@ jobs:
             --target-cpu "$TARGET_ARCH" \
             --remote-build none
         fi
+        # gn gen (run by e init) writes build.ninja but never creates
+        # build.ninja.stamp. Touch the stamp so ninja considers the build
+        # system current and skips the REGENERATE_BUILD rule entirely.
+        touch src/out/Default/build.ninja.stamp
+
+    - name: Run Electron-only hooks
+      run: |
+        e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False,'checkout_win':True},'managed':False}]"
+
+    - name: Add CHROMIUM_BUILDTOOLS_PATH
+      run: echo "CHROMIUM_BUILDTOOLS_PATH=$(pwd)/src/buildtools" >> $GITHUB_ENV
 
     - name: Set GN_EXTRA_ARGS for Windows
       run: |
