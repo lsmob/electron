@@ -290,7 +290,22 @@ $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 > The `npm` prefix is `%APPDATA%\npm` evaluated as the service account, which
 > resolves to the `NetworkService` profile — not to any user's home directory.
 
-### 4 — Install Visual Studio Build Tools
+### 4 — Configure Git globals
+
+The `install-build-tools` action sets these only for MSYS2 bash (which reports
+`MSYS_NT`). Git for Windows reports `MINGW64_NT`, so the action's check never
+matches and the configs are silently skipped. Set them once on the machine:
+
+```powershell
+git config --global core.filemode       false
+git config --global core.autocrlf       false
+git config --global core.fscache        true
+git config --global core.longpaths      true
+git config --global core.preloadindex   true
+git config --global branch.autosetuprebase always
+```
+
+### 5 — Install Visual Studio Build Tools
 
 Required by node-gyp to compile Electron's native test fixtures during
 `yarn install`. Download and run the bootstrapper (~3 GB, 10–15 min):
@@ -321,7 +336,7 @@ arguments), click **Modify** on the BuildTools entry and tick
 node-gyp finds MSVC automatically via the registry — no PATH changes or
 runner restart needed.
 
-### 5 — Add Debugging Tools for Windows
+### 6 — Add Debugging Tools for Windows
 
 Required for release builds to generate PDB files for crash reporting.
 Open the Visual Studio Installer, click **Modify** on the Build Tools entry,
@@ -337,7 +352,7 @@ Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=2164145" `
 & "$env:TEMP\winsdksetup.exe" /features OptionId.WindowsDesktopDebuggers /quiet /norestart
 ```
 
-### 6 — Exclude build directory from Windows Defender
+### 7 — Exclude build directory from Windows Defender
 
 Windows Security scanning the Chromium source tree causes significant
 slowdowns and can interfere with the sync process. Add the work directory
@@ -347,7 +362,7 @@ to the exclusion list before running any builds:
 Add-MpPreference -ExclusionPath "D:\actions-runner\_work"
 ```
 
-### 7 — Download and configure the runner
+### 8 — Download and configure the runner
 
 ```powershell
 New-Item -ItemType Directory -Path D:\actions-runner   # choose a drive with 200 GB+
@@ -369,7 +384,7 @@ Expand-Archive actions-runner-win-x64.zip -DestinationPath .
   --runasservice
 ```
 
-### 8 — Start the Windows service
+### 9 — Start the Windows service
 
 The runner is registered as a Windows service automatically by `config.cmd` — there is
 no separate install step. Manage it with PowerShell (run as Administrator):
