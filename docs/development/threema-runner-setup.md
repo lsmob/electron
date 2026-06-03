@@ -106,6 +106,8 @@ sudo -u github-runner docker pull \
 macOS builds run natively without Docker. The `fix-sync` action installs
 platform-specific toolchain binaries (clang, gn, ninja, siso) after `gclient sync`.
 
+**Requirements:** macOS 12 or later, Xcode (latest), Node.js 22.12.0+, Python 3.9+.
+
 ### 1 — Install Xcode
 
 Install Xcode from the App Store (full Xcode, not just Command Line Tools).
@@ -141,6 +143,13 @@ The workflow sets `TOOLCHAINS=Metal` so the build picks it up automatically.
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 brew install git node python3
+```
+
+Verify minimum versions after install:
+
+```bash
+node --version   # must be >= 22.12.0
+python3 --version  # must be >= 3.9
 ```
 
 ### 3 — Download and configure the runner
@@ -259,7 +268,7 @@ Restart-Service "actions.runner.*"
 
 ### 3 — Install Node.js
 
-Download the LTS installer from https://nodejs.org.
+Download the LTS installer (v22.12.0 or later) from https://nodejs.org.
 
 The installer adds Node.js to the **user** PATH only. The runner service runs
 as `NT AUTHORITY\NETWORK SERVICE` and uses the **system** PATH. Add both the
@@ -313,7 +322,33 @@ arguments), click **Modify** on the BuildTools entry and tick
 node-gyp finds MSVC automatically via the registry — no PATH changes or
 runner restart needed.
 
-### 5 — Download and configure the runner
+### 5 — Add Debugging Tools for Windows
+
+Required for release builds to generate PDB files for crash reporting.
+Open the Visual Studio Installer, click **Modify** on the Build Tools entry,
+go to **Individual Components**, and tick **Windows 11 SDK** (or whichever
+SDK version is installed). Then in the Windows SDK installer select
+**Debugging Tools for Windows** as an additional feature.
+
+Alternatively, install directly from the Windows SDK:
+
+```powershell
+Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=2164145" `
+  -OutFile "$env:TEMP\winsdksetup.exe"
+& "$env:TEMP\winsdksetup.exe" /features OptionId.WindowsDesktopDebuggers /quiet /norestart
+```
+
+### 6 — Exclude build directory from Windows Defender
+
+Windows Security scanning the Chromium source tree causes significant
+slowdowns and can interfere with the sync process. Add the work directory
+to the exclusion list before running any builds:
+
+```powershell
+Add-MpPreference -ExclusionPath "D:\actions-runner\_work"
+```
+
+### 7 — Download and configure the runner
 
 Open PowerShell as the user that will run builds (not Administrator):
 
@@ -337,7 +372,7 @@ Expand-Archive actions-runner-win-x64.zip -DestinationPath .
   --runasservice
 ```
 
-### 6 — Start the Windows service
+### 8 — Start the Windows service
 
 The runner is registered as a Windows service automatically by `config.cmd` — there is
 no separate install step. Manage it with PowerShell (run as Administrator):
@@ -362,8 +397,6 @@ Check logs in `D:\actions-runner\_diag\`.
 
 - `depot_tools` downloads the pinned MSVC toolchain during `fix-sync` — this is a
   multi-GB download on the first run.
-- Antivirus scanning of the build directory can cause significant slowdowns. Add
-  `D:\actions-runner\_work` to your antivirus exclusion list.
 - The runner service must be started **after** all system PATH changes are made
   (Git `bin\`, Node.js, and npm prefix). The service captures PATH at startup
   and does not pick up changes until it is restarted.
