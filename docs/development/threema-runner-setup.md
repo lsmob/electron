@@ -11,15 +11,13 @@ platforms to build each time; nothing runs automatically on push.
 
 ## Hardware requirements
 
-| Platform | Runner labels | Disk | RAM | Notes |
-|---|---|---|---|---|
-| Linux x64 | `self-hosted, linux, x64` | 200 GB+ | 16 GB+ | Runs inside Docker container |
-| macOS arm64 | `self-hosted, macOS, X64` | 200 GB+ | 16 GB+ | Cross-compiled on Intel host |
-| macOS x64 | `self-hosted, macOS, X64` | 200 GB+ | 16 GB+ | Native on Intel host |
-| Windows x64 | `self-hosted, Windows, x64` | 200 GB+ | 16 GB+ | Native Windows |
-
-> macOS arm64 and macOS x64 share the same Intel runner. Run them as separate
-> workflow dispatches, not simultaneously.
+| Runner | Labels | CPU | RAM (testing) | RAM (release) | Disk |
+|---|---|---|---|---|---|
+| Linux x64 | `self-hosted, linux, x64` | 16+ cores | 32 GB | 64 GB | 400 GB SSD |
+| Linux arm64 | `self-hosted, linux, x64` | 16+ cores | 32 GB | 64 GB | 400 GB SSD |
+| macOS arm64 | `self-hosted, macOS, X64` | 8+ cores (Intel) | 32 GB | 64 GB | 400 GB SSD |
+| macOS x64 | `self-hosted, macOS, X64` | 8+ cores (Intel) | 32 GB | 64 GB | 400 GB SSD |
+| Windows x64 | `self-hosted, Windows, x64` | 32 cores | 64 GB | 128 GB | 200 GB boot + 600 GB data SSD |
 
 ---
 
