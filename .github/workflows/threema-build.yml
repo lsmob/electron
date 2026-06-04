@@ -656,17 +656,6 @@ jobs:
     - name: Install Build Tools
       uses: ./src/electron/.github/actions/install-build-tools
 
-    - name: Diagnose git config (Windows)
-      run: |
-        echo "=== uname ==="
-        uname -s
-        echo "=== git config --list --show-origin ==="
-        git config --list --show-origin || true
-        echo "=== branch.autosetuprebase (global) ==="
-        git config --global branch.autosetuprebase || echo "(not set)"
-        echo "=== branch.autosetuprebase (system) ==="
-        git config --system branch.autosetuprebase || echo "(not set)"
-
     - name: Sync Chromium source and apply patches
       run: |
         e d gclient config \
