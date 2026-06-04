@@ -290,19 +290,22 @@ $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 > The `npm` prefix is `%APPDATA%\npm` evaluated as the service account, which
 > resolves to the `NetworkService` profile — not to any user's home directory.
 
-### 4 — Configure Git globals
+### 4 — Configure Git
 
 The `install-build-tools` action sets these only for MSYS2 bash (which reports
 `MSYS_NT`). Git for Windows reports `MINGW64_NT`, so the action's check never
-matches and the configs are silently skipped. Set them once on the machine:
+matches and the configs are silently skipped. Write them directly into the
+`NETWORK SERVICE` profile so they apply to the runner service regardless of
+which git config scope tools query:
 
 ```powershell
-git config --global core.filemode       false
-git config --global core.autocrlf       false
-git config --global core.fscache        true
-git config --global core.longpaths      true
-git config --global core.preloadindex   true
-git config --global branch.autosetuprebase always
+$ns = "C:\Windows\ServiceProfiles\NetworkService\.gitconfig"
+git config --file $ns core.filemode         false
+git config --file $ns core.autocrlf         false
+git config --file $ns core.fscache          true
+git config --file $ns core.longpaths        true
+git config --file $ns core.preloadindex     true
+git config --file $ns branch.autosetuprebase always
 ```
 
 ### 5 — Install Visual Studio Build Tools
