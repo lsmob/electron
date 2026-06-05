@@ -836,6 +836,7 @@ jobs:
     - name: Rename artifacts to @electron/get naming convention
       run: |
         VERSION="${{ steps.version.outputs.version }}"
+        TAG="v${VERSION}-threema"
         mkdir -p release-assets
 
         rename() {
@@ -870,10 +871,10 @@ jobs:
           --pattern 'SHASUMS256.txt' --output existing-shasums.txt 2>/dev/null \
           || touch existing-shasums.txt
         # Strip stale entries for files we are about to re-upload, keep the rest.
-        built_zips=$(ls *.zip 2>/dev/null || true)
-        if [ -n "$built_zips" ]; then
-          grep -vF "$built_zips" existing-shasums.txt > SHASUMS256.txt || true
-          sha256sum $built_zips >> SHASUMS256.txt
+        built_files=$(ls *.zip *.tar.gz 2>/dev/null || true)
+        if [ -n "$built_files" ]; then
+          grep -vF "$built_files" existing-shasums.txt > SHASUMS256.txt || true
+          sha256sum $built_files >> SHASUMS256.txt
         else
           cp existing-shasums.txt SHASUMS256.txt
         fi
