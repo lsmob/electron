@@ -863,7 +863,21 @@ jobs:
           "node-v${VERSION}-headers.tar.gz"
 
         cd release-assets
-        sha256sum * > SHASUMS256.txt
+        # Download existing SHASUMS256.txt from the release (if any) and merge.
+        # This preserves entries for platforms not built in this run so that a
+        # partial re-run (e.g. windows-only) doesn't wipe linux/macOS checksums.
+        gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+          --pattern 'SHASUMS256.txt' --output existing-shasums.txt 2>/dev/null \
+          || touch existing-shasums.txt
+        # Strip stale entries for files we are about to re-upload, keep the rest.
+        built_zips=$(ls *.zip 2>/dev/null || true)
+        if [ -n "$built_zips" ]; then
+          grep -vF "$built_zips" existing-shasums.txt > SHASUMS256.txt || true
+          sha256sum $built_zips >> SHASUMS256.txt
+        else
+          cp existing-shasums.txt SHASUMS256.txt
+        fi
+        rm existing-shasums.txt
         echo "--- Release assets ---"
         ls -lh
 
