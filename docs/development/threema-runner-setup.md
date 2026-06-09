@@ -25,7 +25,7 @@ platforms to build each time; nothing runs automatically on push.
 
 Before setting up any runner, generate a registration token:
 
-1. Go to `https://github.com/lsmob/electron/settings/actions/runners`
+1. Go to `https://github.com/threema-ch/electron/settings/actions/runners`
 2. Click **New self-hosted runner**
 3. Select the OS and architecture
 4. Copy the token — it expires in **1 hour**
@@ -67,7 +67,7 @@ curl -o actions-runner-linux-x64.tar.gz -L \
 tar xzf actions-runner-linux-x64.tar.gz
 
 ./config.sh \
-  --url https://github.com/lsmob/electron \
+  --url https://github.com/threema-ch/electron \
   --token <TOKEN> \
   --name linux-builder \
   --labels self-hosted,linux,x64 \
@@ -87,7 +87,7 @@ sudo ./svc.sh status
 
 Check logs:
 ```bash
-journalctl -u actions.runner.lsmob-electron.linux-builder -f
+journalctl -u actions.runner.threema-ch-electron.linux-builder -f
 ```
 
 ### 5 — Pre-pull the build image
@@ -164,7 +164,7 @@ curl -o actions-runner-osx-x64.tar.gz -L \
 tar xzf actions-runner-osx-x64.tar.gz
 
 ./config.sh \
-  --url https://github.com/lsmob/electron \
+  --url https://github.com/threema-ch/electron \
   --token <TOKEN> \
   --name macos-intel-builder \
   --labels self-hosted,macOS,X64 \
@@ -184,7 +184,7 @@ causes bootstrap to fail without a GUI session. Fix both issues and raise the
 file descriptor limits so the build doesn't need `sudo` at runtime:
 
 ```bash
-PLIST=~/Library/LaunchAgents/actions.runner.lsmob-electron.macos-intel-builder.plist
+PLIST=~/Library/LaunchAgents/actions.runner.threema-ch-electron.macos-intel-builder.plist
 
 # Allow the agent to run without a GUI session
 /usr/libexec/PlistBuddy -c "Add :LimitLoadToSessionType string Background" "$PLIST"
@@ -204,7 +204,7 @@ launchctl bootstrap user/$(id -u) "$PLIST"
 launchctl bootout user/$(id -u) "$PLIST"
 
 # Status
-launchctl print user/$(id -u)/actions.runner.lsmob-electron.macos-intel-builder
+launchctl print user/$(id -u)/actions.runner.threema-ch-electron.macos-intel-builder
 ```
 
 > **Note:** `svc.sh install` regenerates the plist each time, so re-apply the
@@ -212,7 +212,7 @@ launchctl print user/$(id -u)/actions.runner.lsmob-electron.macos-intel-builder
 
 Check logs:
 ```bash
-tail -f ~/Library/Logs/actions.runner.lsmob-electron.macos-intel-builder/Runner_*.log
+tail -f ~/Library/Logs/actions.runner.threema-ch-electron.macos-intel-builder/Runner_*.log
 ```
 
 ### Notes
@@ -378,7 +378,7 @@ Invoke-WebRequest `
 Expand-Archive actions-runner-win-x64.zip -DestinationPath .
 
 .\config.cmd `
-  --url https://github.com/lsmob/electron `
+  --url https://github.com/threema-ch/electron `
   --token <TOKEN> `
   --name windows-builder `
   --labels self-hosted,Windows,x64 `
@@ -420,7 +420,7 @@ Check logs in `D:\actions-runner\_diag\`.
 
 ## Secrets
 
-Set these in `https://github.com/lsmob/electron/settings/secrets/actions`:
+Set these in `https://github.com/threema-ch/electron/settings/secrets/actions`:
 
 | Secret | Required | Purpose |
 |---|---|---|
@@ -435,7 +435,7 @@ Successful builds are published as a GitHub Release tagged `v<version>-threema`.
 Configure `@electron/get` in Threema Desktop to download from there:
 
 ```bash
-ELECTRON_MIRROR=https://github.com/lsmob/electron/releases/download/
+ELECTRON_MIRROR=https://github.com/threema-ch/electron/releases/download/
 ELECTRON_CUSTOM_DIR=v{{ version }}-threema
 ```
 
@@ -443,7 +443,7 @@ Or in `package.json` under `build.electronDownload` (electron-builder):
 
 ```json
 "electronDownload": {
-  "mirror": "https://github.com/lsmob/electron/releases/download/",
+  "mirror": "https://github.com/threema-ch/electron/releases/download/",
   "customDir": "v{{ version }}-threema"
 }
 ```
