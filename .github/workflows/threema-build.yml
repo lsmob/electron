@@ -867,18 +867,22 @@ jobs:
         # Download existing SHASUMS256.txt from the release (if any) and merge.
         # This preserves entries for platforms not built in this run so that a
         # partial re-run (e.g. windows-only) doesn't wipe linux/macOS checksums.
-        gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
-          --pattern 'SHASUMS256.txt' --output existing-shasums.txt 2>/dev/null \
-          || touch existing-shasums.txt
+        if gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern 'SHASUMS256.txt' -D /tmp/existing-sha; then
+          echo "Downloaded existing SHASUMS256.txt — merging"
+          existing=/tmp/existing-sha/SHASUMS256.txt
+        else
+          echo "No existing SHASUMS256.txt found — starting fresh"
+          existing=/dev/null
+        fi
         # Strip stale entries for files we are about to re-upload, keep the rest.
         built_files=$(ls *.zip *.tar.gz 2>/dev/null || true)
         if [ -n "$built_files" ]; then
-          grep -vF "$built_files" existing-shasums.txt > SHASUMS256.txt || true
+          grep -vF "$built_files" "$existing" > SHASUMS256.txt || true
           sha256sum $built_files >> SHASUMS256.txt
         else
-          cp existing-shasums.txt SHASUMS256.txt
+          cp "$existing" SHASUMS256.txt
         fi
-        rm existing-shasums.txt
         echo "--- Release assets ---"
         ls -lh
 
