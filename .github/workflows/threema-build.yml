@@ -715,6 +715,8 @@ jobs:
         path: artifacts/windows-x64
 
     - name: Rename artifacts to @electron/get naming convention
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         VERSION="${{ steps.version.outputs.version }}"
         TAG="v${VERSION}-threema"
