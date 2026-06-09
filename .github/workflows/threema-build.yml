@@ -15,12 +15,6 @@ name: Threema Electron Build
 #   To use self-hosted runners, replace the `runs-on` label in each job.
 #
 # SECRETS:
-#   ENGFLOW_CREDENTIAL_JSON (optional) - EngFlow service-account credential (JSON).
-#                       When set, reclient/reproxy is routed to EngFlow instead of
-#                       Electron's RBE. Replace ENGFLOW_CLUSTER and ENGFLOW_INSTANCE
-#                       placeholders in the "Init build configuration" step once you
-#                       have an EngFlow account.
-#                       When absent, the build runs locally with no remote cache.
 #   CHROMIUM_GIT_COOKIE         (optional) - Raises Chromium git server rate
 #   CHROMIUM_GIT_COOKIE_WINDOWS_STRING  limits. Builds work without it but
 #                               may hit throttling during gclient sync.
@@ -99,7 +93,6 @@ jobs:
       TARGET_PLATFORM: linux
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_arm=True --custom-var=checkout_arm64=True'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
-      ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
 
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
@@ -134,26 +127,10 @@ jobs:
 
     - name: Init build configuration
       run: |
-        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
-          echo "EngFlow credentials present — routing reclient to EngFlow RBE"
-          ENGFLOW_CREDS="/tmp/engflow-creds.json"
-          echo "$ENGFLOW_CREDENTIAL_JSON" > "$ENGFLOW_CREDS"
-          # RBE_* env vars override whatever configure_reclient_cfgs.py wrote.
-          # TODO: replace both placeholders once your EngFlow account is set up.
-          export RBE_server_address="grpcs://PLACEHOLDER.cluster.engflow.com:443"
-          export RBE_instance="PLACEHOLDER_ENGFLOW_INSTANCE"
-          export RBE_credential_file="$ENGFLOW_CREDS"
-          {
-            echo "RBE_server_address=grpcs://PLACEHOLDER.cluster.engflow.com:443"
-            echo "RBE_instance=PLACEHOLDER_ENGFLOW_INSTANCE"
-            echo "RBE_credential_file=$ENGFLOW_CREDS"
-          } >> "$GITHUB_ENV"
-        fi
-
         e init -f --root=$(pwd) --out=Default \
           "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
           --target-cpu "$TARGET_ARCH" \
-          --remote-build siso
+          --remote-build none
     - name: Run Electron-only hooks
       run: |
         e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
@@ -211,7 +188,6 @@ jobs:
       # checkout_arm64=True pulls the arm64 sysroot needed for cross-compilation
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_arm=True --custom-var=checkout_arm64=True'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
-      ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
 
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
 
@@ -246,26 +222,10 @@ jobs:
 
     - name: Init build configuration
       run: |
-        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
-          echo "EngFlow credentials present — routing reclient to EngFlow RBE"
-          ENGFLOW_CREDS="/tmp/engflow-creds.json"
-          echo "$ENGFLOW_CREDENTIAL_JSON" > "$ENGFLOW_CREDS"
-          # RBE_* env vars override whatever configure_reclient_cfgs.py wrote.
-          # TODO: replace both placeholders once your EngFlow account is set up.
-          export RBE_server_address="grpcs://PLACEHOLDER.cluster.engflow.com:443"
-          export RBE_instance="PLACEHOLDER_ENGFLOW_INSTANCE"
-          export RBE_credential_file="$ENGFLOW_CREDS"
-          {
-            echo "RBE_server_address=grpcs://PLACEHOLDER.cluster.engflow.com:443"
-            echo "RBE_instance=PLACEHOLDER_ENGFLOW_INSTANCE"
-            echo "RBE_credential_file=$ENGFLOW_CREDS"
-          } >> "$GITHUB_ENV"
-        fi
-
         e init -f --root=$(pwd) --out=Default \
           "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
           --target-cpu "$TARGET_ARCH" \
-          --remote-build siso
+          --remote-build none
     - name: Run Electron-only hooks
       run: |
         e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
@@ -313,7 +273,6 @@ jobs:
       TARGET_PLATFORM: macos
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_mac=True --custom-var=host_os=mac'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
-      ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
       ELECTRON_DEPOT_TOOLS_DISABLE_LOG: "1"
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
       TOOLCHAINS: Metal
@@ -397,36 +356,10 @@ jobs:
 
     - name: Init build configuration
       run: |
-        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
-          echo "EngFlow credentials present — routing reclient to EngFlow RBE"
-          ENGFLOW_CREDS="/tmp/engflow-creds.json"
-          echo "$ENGFLOW_CREDENTIAL_JSON" > "$ENGFLOW_CREDS"
-          # RBE_* env vars override whatever configure_reclient_cfgs.py wrote.
-          # TODO: replace both placeholders once your EngFlow account is set up.
-          export RBE_server_address="grpcs://PLACEHOLDER.cluster.engflow.com:443"
-          export RBE_instance="PLACEHOLDER_ENGFLOW_INSTANCE"
-          export RBE_credential_file="$ENGFLOW_CREDS"
-          {
-            echo "RBE_server_address=grpcs://PLACEHOLDER.cluster.engflow.com:443"
-            echo "RBE_instance=PLACEHOLDER_ENGFLOW_INSTANCE"
-            echo "RBE_credential_file=$ENGFLOW_CREDS"
-          } >> "$GITHUB_ENV"
-        fi
-
-        # Use siso remote build only when EngFlow credentials are available.
-        # macOS native runners fall back to a local build otherwise.
-        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
-          e init -f --root=$(pwd) --out=Default \
-            "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
-            --target-cpu "$TARGET_ARCH" \
-            --remote-build siso
-        else
-          echo "No RBE credentials available — building locally without remote cache"
-          e init -f --root=$(pwd) --out=Default \
-            "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
-            --target-cpu "$TARGET_ARCH" \
-            --remote-build none
-        fi
+        e init -f --root=$(pwd) --out=Default \
+          "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
+          --target-cpu "$TARGET_ARCH" \
+          --remote-build none
     - name: Run Electron-only hooks
       run: |
         e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
@@ -475,7 +408,6 @@ jobs:
       TARGET_PLATFORM: macos
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_mac=True --custom-var=host_os=mac'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
-      ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
       ELECTRON_DEPOT_TOOLS_DISABLE_LOG: "1"
       CHROMIUM_GIT_COOKIE: ${{ secrets.CHROMIUM_GIT_COOKIE }}
       TOOLCHAINS: Metal
@@ -544,35 +476,10 @@ jobs:
 
     - name: Init build configuration
       run: |
-        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
-          echo "EngFlow credentials present — routing reclient to EngFlow RBE"
-          ENGFLOW_CREDS="/tmp/engflow-creds.json"
-          echo "$ENGFLOW_CREDENTIAL_JSON" > "$ENGFLOW_CREDS"
-          # RBE_* env vars override whatever configure_reclient_cfgs.py wrote.
-          # TODO: replace both placeholders once your EngFlow account is set up.
-          export RBE_server_address="grpcs://PLACEHOLDER.cluster.engflow.com:443"
-          export RBE_instance="PLACEHOLDER_ENGFLOW_INSTANCE"
-          export RBE_credential_file="$ENGFLOW_CREDS"
-          {
-            echo "RBE_server_address=grpcs://PLACEHOLDER.cluster.engflow.com:443"
-            echo "RBE_instance=PLACEHOLDER_ENGFLOW_INSTANCE"
-            echo "RBE_credential_file=$ENGFLOW_CREDS"
-          } >> "$GITHUB_ENV"
-        fi
-
-        # Use siso remote build only when RBE credentials are available.
-        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
-          e init -f --root=$(pwd) --out=Default \
-            "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
-            --target-cpu "$TARGET_ARCH" \
-            --remote-build siso
-        else
-          echo "No RBE credentials available — building locally without remote cache"
-          e init -f --root=$(pwd) --out=Default \
-            "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
-            --target-cpu "$TARGET_ARCH" \
-            --remote-build none
-        fi
+        e init -f --root=$(pwd) --out=Default \
+          "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
+          --target-cpu "$TARGET_ARCH" \
+          --remote-build none
     - name: Run Electron-only hooks
       run: |
         e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False},'managed':False}]"
@@ -621,7 +528,6 @@ jobs:
       TARGET_PLATFORM: win
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_win=True'
       GN_BUILD_TYPE: ${{ inputs.gn-build-type || 'testing' }}
-      ENGFLOW_CREDENTIAL_JSON: ${{ secrets.ENGFLOW_CREDENTIAL_JSON }}
 
       CHROMIUM_GIT_COOKIE_WINDOWS_STRING: ${{ secrets.CHROMIUM_GIT_COOKIE_WINDOWS_STRING }}
       # Suppress "Running ..." prefix from e d so command output isn't polluted
@@ -675,35 +581,10 @@ jobs:
 
     - name: Init build configuration
       run: |
-        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
-          echo "EngFlow credentials present — routing reclient to EngFlow RBE"
-          ENGFLOW_CREDS="/tmp/engflow-creds.json"
-          echo "$ENGFLOW_CREDENTIAL_JSON" > "$ENGFLOW_CREDS"
-          # RBE_* env vars override whatever configure_reclient_cfgs.py wrote.
-          # TODO: replace both placeholders once your EngFlow account is set up.
-          export RBE_server_address="grpcs://PLACEHOLDER.cluster.engflow.com:443"
-          export RBE_instance="PLACEHOLDER_ENGFLOW_INSTANCE"
-          export RBE_credential_file="$ENGFLOW_CREDS"
-          {
-            echo "RBE_server_address=grpcs://PLACEHOLDER.cluster.engflow.com:443"
-            echo "RBE_instance=PLACEHOLDER_ENGFLOW_INSTANCE"
-            echo "RBE_credential_file=$ENGFLOW_CREDS"
-          } >> "$GITHUB_ENV"
-        fi
-
-        # Use siso remote build only when RBE credentials are available.
-        if [ -n "${ENGFLOW_CREDENTIAL_JSON:-}" ]; then
-          e init -f --root=$(pwd) --out=Default \
-            "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
-            --target-cpu "$TARGET_ARCH" \
-            --remote-build siso
-        else
-          echo "No RBE credentials available — building locally without remote cache"
-          e init -f --root=$(pwd) --out=Default \
-            "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
-            --target-cpu "$TARGET_ARCH" \
-            --remote-build none
-        fi
+        e init -f --root=$(pwd) --out=Default \
+          "$GN_BUILD_TYPE" --import "$GN_BUILD_TYPE" \
+          --target-cpu "$TARGET_ARCH" \
+          --remote-build none
     - name: Run Electron-only hooks
       run: |
         e d gclient runhooks --spec="solutions=[{'name':'src/electron','url':None,'deps_file':'DEPS','custom_vars':{'process_deps':False,'checkout_win':True},'managed':False}]"
